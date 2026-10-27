@@ -3,92 +3,76 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F9F9FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <title>Easy Vokab Trainer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap">
+<link rel="stylesheet" href="../material.css">
 <style>
-/* Layout: una columna tipo app móvil. Colores de artículo = convención de estudio: der azul, die rojo, das verde. */
-:root{
-  --bg:#f2f5f9; --surface:#ffffff; --ink:#14202e; --muted:#5d6b7c; --line:#dbe2ea;
-  --der:#2b6bd6; --die:#d2433b; --das:#2a9457; --accent:#14202e; --on-accent:#ffffff;
-  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
-  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0e141c; --surface:#17202b; --ink:#e7edf4; --muted:#93a1b2; --line:#263344;
-  --der:#6fa0ff; --die:#ff8279; --das:#5fd38e; --accent:#e7edf4; --on-accent:#0e141c; color-scheme:dark;}}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 var(--body);
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:0;-webkit-tap-highlight-color:transparent}
-#app{max-width:560px;margin:0 auto;padding:18px 0 40px}
-h1,h2,.de{font-family:var(--display);margin:0}
-button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible{outline:3px solid var(--der);outline-offset:2px}
-.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.top h1{font-size:1.5rem;letter-spacing:-.01em;flex:1}
-.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--muted)}
-.tabs{display:flex;gap:8px;margin-bottom:16px}
-.tab{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-family:var(--display);font-weight:700;font-size:1.05rem}
-.tab[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.deck{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-.deck h2{font-size:1.1rem;line-height:1.2}
-.deck p{margin:4px 0 10px;color:var(--muted);font-size:.92rem}
-.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:12px}
-.bar i{display:block;height:100%;background:var(--das)}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.btn{flex:1;min-width:120px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:600}
-.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
-.btn[disabled]{opacity:.4;cursor:default}
-.prog{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 20px;min-height:290px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;margin:10px 0 14px}
-.card .de{font-size:2.3rem;line-height:1.1;overflow-wrap:anywhere}
-.card .es{font-size:1.3rem}
-.card .sub{color:var(--muted);font-size:.98rem}
-.art{font-weight:700}
-.art.der{color:var(--der)}.art.die{color:var(--die)}.art.das{color:var(--das)}
-.tag{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.snd{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 16px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
-.snd[hidden]{display:none}
-.snd.on{border-color:var(--der);color:var(--der)}
-.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.art-btn{padding:18px 4px;border-radius:14px;border:2px solid currentColor;background:var(--surface);font-family:var(--display);font-weight:700;font-size:1.4rem}
-.art-btn.der{color:var(--der)}.art-btn.die{color:var(--die)}.art-btn.das{color:var(--das)}
-.art-btn.right{background:currentColor}.art-btn.right span{color:var(--surface)}
-.art-btn.wrong{opacity:.35}
-.fb{min-height:1.6em;font-weight:600}
-.fb.ok{color:var(--das)}.fb.no{color:var(--die)}
-.seg{display:flex;gap:6px;justify-content:center;margin:0 0 4px}
-.seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.85rem;color:var(--muted)}
-.seg button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
-.foot{margin-top:22px;color:var(--muted);font-size:.85rem}
-.foot a{color:inherit}
-.done{text-align:center;padding:30px 0}
-.done h2{font-size:1.8rem;margin-bottom:6px}
-
-.rule{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);margin-bottom:10px;text-align:left}
-.rule.g-der{background:color-mix(in srgb,var(--der) 12%,var(--surface))}
-.rule.g-die{background:color-mix(in srgb,var(--die) 12%,var(--surface))}
-.rule.g-das{background:color-mix(in srgb,var(--das) 12%,var(--surface))}
-.rule p{margin:0}
-.rule-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
-.end{font:600 .95rem ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--line);padding:2px 9px;border-radius:6px}
-.pill{display:inline-block;font-weight:600;font-size:.82rem;padding:1px 10px;border-radius:99px;background:var(--surface);border:1.5px solid currentColor}
-.pill.der{color:var(--der)}.pill.die{color:var(--die)}.pill.das{color:var(--das)}
-.tier{font-size:.82rem;color:var(--muted)}
-.meta{font-size:.9rem;color:var(--muted)}.meta b{color:var(--ink);font-weight:600;margin-right:4px}
-.status{font-weight:600}.status.ok{color:var(--das)}.status.bad{color:var(--die)}
-.lede{color:var(--muted);margin:0 0 12px}
-input.chk{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;color:inherit;margin-bottom:8px}
-.chk-out{min-height:1.5em;margin-bottom:12px}
-.t-der{color:var(--der);font-weight:700}.t-die{color:var(--die);font-weight:700}.t-das{color:var(--das);font-weight:700}
+/* Artículos: der = primary (azul), die = error (rojo), das = success (verde); ver .md-gender-* en material.css */
+.view{max-width:960px;margin:0 auto}
+.session{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.decks{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.deck{display:flex;flex-direction:column;gap:12px}
+.deck-meta{display:flex;justify-content:space-between;gap:8px;color:var(--md-on-surface-variant)}
+.deck .md-row{margin-top:4px}
+.note{margin-top:24px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.s-top{display:flex;align-items:center;gap:16px}
+.s-top .md-progress{flex:1}
+.flash{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px 16px}
+.flash .word{overflow-wrap:anywhere}
+.art{font-weight:500;color:var(--c)}
+.cap{color:var(--md-on-surface-variant);text-transform:uppercase}
+.actions{display:flex;gap:8px}
+.actions .md-btn{flex:1}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.art-btn{position:relative;overflow:hidden;min-height:72px;border:2px solid var(--c);border-radius:16px;background:transparent;color:var(--c);font:500 24px/32px var(--md-font);letter-spacing:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.art-btn::before{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .15s}
+.art-btn:hover:not(:disabled)::before{opacity:.08}
+.art-btn.right{background:var(--c);color:var(--on-c)}
+.art-btn.wrong{background:var(--cc);color:var(--on-cc);border-style:dashed}
+.art-btn:disabled{cursor:default}
+.art-btn:disabled:not(.right):not(.wrong){opacity:.38}
+.verdict{display:flex;align-items:center;gap:8px;min-height:28px}
+.verdict.ok{color:var(--md-success)}.verdict.no{color:var(--md-error)}
+.badge{display:inline-block;padding:0 10px;border-radius:999px;background:var(--c);color:var(--on-c);font:500 12px/20px var(--md-font);letter-spacing:.5px}
+.rule-card{background:var(--cc);color:var(--on-cc);display:flex;flex-direction:column;gap:8px}
+.rule-card.none{background:var(--md-surface-container-high);color:var(--md-on-surface)}
+.rule-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.end{padding:0 8px;border-radius:4px;background:var(--md-surface);color:var(--md-on-surface);font:500 14px/24px ui-monospace,Menlo,Consolas,monospace}
+.rule-card .meta b{margin-right:6px}
+.status{display:flex;align-items:center;gap:8px;font-weight:500}
+.rules{display:flex;flex-direction:column;gap:12px}
+.rules-top{display:flex;flex-direction:column;gap:16px;margin-bottom:16px}
+.chk-out{min-height:24px}
+.t-der{color:var(--md-primary);font-weight:500}.t-die{color:var(--md-error);font-weight:500}.t-das{color:var(--md-success);font-weight:500}
+.playing .md-icon{font-variation-settings:"FILL" 1,"wght" 400,"GRAD" 0,"opsz" 20}
+.done{text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px 0}
+.done .md-row{justify-content:center;margin-top:16px}
 </style>
 </head>
 <body>
-<div id="app"></div>
+
+<header class="md-top">
+  <div class="md-top-in">
+    <a class="md-icon-btn" id="up" href="../" aria-label="Todas las herramientas"><span class="md-icon" aria-hidden="true">arrow_back</span></a>
+    <h1 id="title">Easy Vokab Trainer</h1>
+  </div>
+</header>
+
+<main class="md-main"><div class="view" id="app"></div></main>
+
+<nav class="md-nav" role="tablist" aria-label="Niveles">
+  <div class="md-nav-in">
+    <button class="md-nav-item" role="tab" data-lv="A1" aria-selected="true"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">looks_one</span></span><span>A1</span></button>
+    <button class="md-nav-item" role="tab" data-lv="A2" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">looks_two</span></span><span>A2</span></button>
+    <button class="md-nav-item" role="tab" data-lv="R" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">rule</span></span><span>Reglas</span></button>
+  </div>
+</nav>
+
+<div class="md-snack" id="snack" role="status" aria-live="polite"></div>
+
 <script>
 /* ---------- Datos ----------
    Formato: der|die|das|v|a|x  |  palabra  |  plural o formas  |  español
@@ -820,6 +804,7 @@ der|Umtausch|-|cambio (devolución)
 `}
 ];
 
+
 /* ---------- Utilidades ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -839,6 +824,7 @@ let prog = lsGet('dk-prog', {});         // clave -> caja 0..4
 let state = lsGet('dk-ui', { lv: 'A1', dir: 'es-de' });
 const box = w => prog[w.k] || 0;
 const MASTER = 3;
+
 
 /* ---------- Pronunciación (Wiktionary → Wikimedia Commons) ---------- */
 const audMem = new Map();
@@ -877,8 +863,9 @@ function findAudio(word) {
   audMem.set(word, p);
   return p;
 }
+
 function audioBtn(word) {
-  return '<button class="snd" data-w="' + esc(word) + '" hidden aria-label="Escuchar ' + esc(word) + '">🔊 Escuchar</button>';
+  return '<button class="md-btn tonal has-icon snd" data-w="' + esc(word) + '" hidden aria-label="Escuchar ' + esc(word) + '"><span class="md-icon" aria-hidden="true">volume_up</span>Escuchar</button>';
 }
 function wireAudio() {
   document.querySelectorAll('.snd[data-w]').forEach(b => {
@@ -888,15 +875,20 @@ function wireAudio() {
       b.hidden = false;
       b.onclick = () => {
         const a = new Audio(u);
-        b.classList.add('on');
-        a.onended = a.onerror = () => b.classList.remove('on');
-        a.play().catch(() => b.classList.remove('on'));
+        b.classList.add('playing');
+        a.onended = a.onerror = () => b.classList.remove('playing');
+        a.play().catch(() => { b.classList.remove('playing'); snack('No se pudo reproducir el audio.'); });
       };
     });
   });
 }
 const prefetch = w => { if (w) findAudio(w.de); };
 
+let snackT = null;
+function snack(msg) {
+  const s = $('#snack'); s.textContent = msg; s.classList.add('show');
+  clearTimeout(snackT); snackT = setTimeout(() => s.classList.remove('show'), 2800);
+}
 
 /* ---------- Reglas de género ---------- */
 const LEVELS = { sure: ['Fiable', 3], strong: ['Fuerte', 2], tend: ['Tendencia', 1] };
@@ -971,76 +963,90 @@ function matchRules(word) {
   hits.sort((a, b) => b.spec - a.spec);
   return hits.map(h => h.r);
 }
+
+const GICON = { ok: 'check_circle', bad: 'error' };
 function ruleBody(r, extra) {
-  const eg = r.eg.length ? '<p class="meta"><b>Ejemplos</b>' + r.eg.map(x => esc(r.g + ' ' + x)).join(' · ') + '</p>' : '';
-  const ex = r.ex.length ? '<p class="meta"><b>Excepciones</b>' + r.ex.slice(0, 12).map(esc).join(', ') + (r.ex.length > 12 ? ' …' : '') + '</p>' : '';
-  return '<div class="rule-head"><code class="end">' + esc(endLabel(r)) + '</code><span class="pill ' + r.g + '">' + r.g + '</span><span class="tier">' + LEVELS[r.l][0] + '</span></div>' +
-    (extra || '') + '<p>' + esc(r.t) + '</p>' + eg + ex;
+  const eg = r.eg.length ? '<p class="t-body-m meta"><b>Ejemplos</b>' + r.eg.map(x => esc(r.g + ' ' + x)).join(' · ') + '</p>' : '';
+  const ex = r.ex.length ? '<p class="t-body-m meta"><b>Excepciones</b>' + r.ex.slice(0, 12).map(esc).join(', ') + (r.ex.length > 12 ? ' …' : '') + '</p>' : '';
+  return '<div class="rule-head"><code class="end">' + esc(endLabel(r)) + '</code><span class="badge">' + r.g + '</span><span class="t-label-m">' + LEVELS[r.l][0] + '</span></div>' +
+    (extra || '') + '<p class="t-body-m">' + esc(r.t) + '</p>' + eg + ex;
 }
+function ruleCard(r, extra) { return '<section class="md-card rule-card md-gender-' + r.g + '">' + ruleBody(r, extra) + '</section>'; }
 function ruleBlock(w) {
   const hits = matchRules(w.de);
-  if (!hits.length) return '<section class="rule"><p><b>Ninguna regla de terminación aplica.</b> Esta hay que memorizarla. Aprende la palabra con su artículo: <b>' + esc(w.art + ' ' + w.de) + '</b>.</p></section>';
+  if (!hits.length) return '<section class="md-card rule-card none"><p class="t-body-m"><b>Ninguna regla de terminación aplica.</b> Esta hay que memorizarla. Aprende la palabra con su artículo: <b>' + esc(w.art + ' ' + w.de) + '</b>.</p></section>';
   const p = hits[0];
   let st;
-  if (w.art === p.g) st = '<p class="status ok">Esta palabra sigue la regla.</p>';
-  else if (p.exL.has(w.de.toLowerCase())) st = '<p class="status bad">Es una excepción conocida. Memorízala como excepción.</p>';
-  else st = '<p class="status bad">Esta palabra rompe el patrón. ' + (p.l === 'tend' ? 'Pasa con las tendencias.' : 'Agrégala a tus excepciones.') + '</p>';
-  return '<section class="rule g-' + p.g + '">' + ruleBody(p, st) + '</section>';
+  if (w.art === p.g) st = '<p class="status t-body-m"><span class="md-icon fill" aria-hidden="true">check_circle</span>Esta palabra sigue la regla.</p>';
+  else if (p.exL.has(w.de.toLowerCase())) st = '<p class="status t-body-m"><span class="md-icon fill" aria-hidden="true">error</span>Es una excepción conocida. Memorízala como excepción.</p>';
+  else st = '<p class="status t-body-m"><span class="md-icon fill" aria-hidden="true">error</span>Esta palabra rompe el patrón. ' + (p.l === 'tend' ? 'Pasa con las tendencias.' : 'Agrégala a tus excepciones.') + '</p>';
+  return ruleCard(p, st);
 }
 let ruleFilter = '';
+const chip = (label, pressed, attrs) => '<button class="md-chip" aria-pressed="' + pressed + '" ' + attrs + '><span class="md-icon" aria-hidden="true">check</span>' + label + '</button>';
 function rulesHtml() {
-  return '<p class="lede">Terminaciones y grupos que predicen el artículo. Las fiables casi no tienen excepciones; las tendencias aciertan más veces que no. Cada regla lista sus excepciones.</p>' +
-    '<input class="chk" id="chk" type="text" placeholder="Prueba una palabra: Wohnung" autocomplete="off" spellcheck="false" autocapitalize="off">' +
-    '<div class="chk-out" id="chk-out" aria-live="polite"></div>' +
-    '<div class="seg" id="rf" style="justify-content:flex-start;margin-bottom:12px">' + ['', 'der', 'die', 'das'].map(f => '<button data-f="' + f + '" aria-pressed="' + (ruleFilter === f) + '">' + (f || 'Todas') + '</button>').join('') + '</div>' +
-    '<div id="rule-list">' + ruleListHtml() + '</div>';
+  return '<div class="rules-top"><p class="t-body-l muted">Terminaciones y grupos que predicen el artículo. Las fiables casi no tienen excepciones; las tendencias aciertan más veces que no. Cada regla lista sus excepciones.</p>' +
+    '<label class="md-field"><input class="chk" id="chk" type="text" placeholder=" " autocomplete="off" spellcheck="false" autocapitalize="off"><span>Prueba una palabra, por ejemplo Wohnung</span></label>' +
+    '<div class="chk-out t-body-l" id="chk-out" aria-live="polite"></div>' +
+    '<div class="md-chips" id="rf" role="group" aria-label="Filtrar por artículo">' + ['', 'der', 'die', 'das'].map(f => chip(f || 'Todas', ruleFilter === f, 'data-f="' + f + '"')).join('') + '</div></div>' +
+    '<div class="rules" id="rule-list">' + ruleListHtml() + '</div>';
 }
-const ruleListHtml = () => RULES.filter(r => !ruleFilter || r.g === ruleFilter).map(r => '<section class="rule g-' + r.g + '">' + ruleBody(r) + '</section>').join('');
+const ruleListHtml = () => RULES.filter(r => !ruleFilter || r.g === ruleFilter).map(r => ruleCard(r)).join('');
 function bindRules() {
   $('#chk').oninput = e => {
     const v = e.target.value.trim(), out = $('#chk-out');
     if (!v) { out.innerHTML = ''; return; }
     const h = matchRules(v);
-    if (!h.length) { out.innerHTML = '<p>Ninguna regla aplica a <b>' + esc(v) + '</b>. Hay que aprenderla de memoria.</p>'; return; }
+    if (!h.length) { out.innerHTML = 'Ninguna regla aplica a <b>' + esc(v) + '</b>. Hay que aprenderla de memoria.'; return; }
     const p = h[0];
-    out.innerHTML = '<p>Mi mejor apuesta para <b>' + esc(v) + '</b>: <span class="t-' + p.g + '">' + p.g + '</span> por <code>' + esc(endLabel(p)) + '</code> (' + LEVELS[p.l][0].toLowerCase() + ').' +
-      (h[1] && h[1].g !== p.g ? ' También coincide con <code>' + esc(endLabel(h[1])) + '</code>, que apunta a ' + h[1].g + '.' : '') + '</p>';
+    out.innerHTML = 'Mi mejor apuesta para <b>' + esc(v) + '</b>: <span class="t-' + p.g + '">' + p.g + '</span> por <code>' + esc(endLabel(p)) + '</code> (' + LEVELS[p.l][0].toLowerCase() + ').' +
+      (h[1] && h[1].g !== p.g ? ' También coincide con <code>' + esc(endLabel(h[1])) + '</code>, que apunta a ' + h[1].g + '.' : '');
   };
-  app.querySelectorAll('#rf button').forEach(b => b.onclick = () => {
+  app.querySelectorAll('#rf .md-chip').forEach(b => b.onclick = () => {
     ruleFilter = b.dataset.f;
-    app.querySelectorAll('#rf button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    app.querySelectorAll('#rf .md-chip').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     $('#rule-list').innerHTML = ruleListHtml();
   });
 }
-function bindTabs() { app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.lv = b.dataset.lv; lsSet('dk-ui', state); home(); }); }
 
 /* ---------- Pantallas ---------- */
 const app = $('#app');
-let S = null; // sesión
+let S = null; // sesión activa
+
+function setBar(title, inSession) {
+  $('#title').textContent = title;
+  const up = $('#up');
+  up.setAttribute('aria-label', inSession ? 'Volver a los decks' : 'Todas las herramientas');
+}
+function setNav(lv) { document.querySelectorAll('.md-nav-item').forEach(b => b.setAttribute('aria-selected', String(b.dataset.lv === lv))); }
+$('#up').addEventListener('click', e => { if (S) { e.preventDefault(); home(); } });
+document.querySelectorAll('.md-nav-item').forEach(b => b.addEventListener('click', () => { state.lv = b.dataset.lv; lsSet('dk-ui', state); home(); }));
 
 function home() {
   S = null;
-  const lvls = [['A1', 'A1'], ['A2', 'A2'], ['R', 'Reglas']];
-  let h = '<div class="top"><h1>Easy Vokab Trainer</h1></div>';
-  h += '<div class="tabs">' + lvls.map(l => '<button class="tab" data-lv="' + l[0] + '" aria-pressed="' + (state.lv === l[0]) + '">' + l[1] + '</button>').join('') + '</div>';
-  if (state.lv === 'R') { app.innerHTML = h + rulesHtml(); bindTabs(); bindRules(); return; }
+  setBar('Easy Vokab Trainer', false);
+  setNav(state.lv);
+  window.scrollTo(0, 0);
+  if (state.lv === 'R') { app.innerHTML = rulesHtml(); bindRules(); return; }
+  let h = '<div class="decks">';
   D.filter(d => d.lv === state.lv).forEach(d => {
     const m = d.words.filter(w => box(w) >= MASTER).length;
     const nouns = d.words.filter(w => w.t === 'n').length;
-    h += '<section class="deck"><h2>' + esc(d.title) + '</h2><p>' + esc(d.sub) + ' · ' + d.words.length + ' palabras</p>' +
-      '<div class="bar"><i style="width:' + Math.round(100 * m / d.words.length) + '%"></i></div>' +
-      '<div class="row"><button class="btn pri" data-go="cards" data-id="' + d.id + '">Tarjetas · ' + m + '/' + d.words.length + '</button>' +
-      '<button class="btn" data-go="art" data-id="' + d.id + '"' + (nouns < 8 ? ' disabled' : '') + '>der · die · das</button></div></section>';
+    const pct = Math.round(100 * m / d.words.length);
+    h += '<section class="md-card elevated deck"><div><h2 class="t-title-l">' + esc(d.title) + '</h2><p class="t-body-m muted">' + esc(d.sub) + '</p></div>' +
+      '<div><div class="deck-meta t-label-m"><span>' + m + ' de ' + d.words.length + ' dominadas</span><span>' + pct + '%</span></div>' +
+      '<div class="md-progress" role="progressbar" aria-label="Progreso del deck" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" style="margin-top:6px"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="md-row"><button class="md-btn filled has-icon" data-go="cards" data-id="' + d.id + '"><span class="md-icon" aria-hidden="true">style</span>Tarjetas</button>' +
+      '<button class="md-btn tonal has-icon" data-go="art" data-id="' + d.id + '"' + (nouns < 8 ? ' disabled' : '') + '><span class="md-icon" aria-hidden="true">rule</span>der · die · das</button></div></section>';
   });
-  h += '<div class="foot">Audio: se busca en Wiktionary / Wikimedia Commons al mostrar cada palabra; el botón aparece solo si existe una grabación. Vocabulario seleccionado por frecuencia y tema, no es copia de la lista oficial del Goethe-Institut. ' +
-    '<br><button class="ghost" id="exp" style="margin-top:10px">Copiar decks como JSON</button></div>';
+  h += '</div><div class="note"><p class="t-body-s muted">Audio: se busca en Wiktionary y Wikimedia Commons al mostrar cada palabra; el botón aparece solo si existe una grabación. Vocabulario seleccionado por frecuencia y tema, no es copia de la lista oficial del Goethe-Institut.</p>' +
+    '<button class="md-btn text has-icon" id="exp"><span class="md-icon" aria-hidden="true">content_copy</span>Copiar decks como JSON</button></div>';
   app.innerHTML = h;
-  bindTabs();
   app.querySelectorAll('[data-go]').forEach(b => b.onclick = () => start(b.dataset.id, b.dataset.go));
-  $('#exp').onclick = async e => {
+  $('#exp').onclick = async () => {
     const out = D.map(d => ({ id: d.id, level: d.lv, title: d.title, words: d.words.map(w => ({ de: w.de, article: w.art || undefined, type: w.t, extra: w.x || undefined, es: w.es })) }));
-    try { await navigator.clipboard.writeText(JSON.stringify(out, null, 1)); e.target.textContent = 'Copiado'; }
-    catch (err) { e.target.textContent = 'No se pudo copiar'; }
+    try { await navigator.clipboard.writeText(JSON.stringify(out, null, 1)); snack('Decks copiados al portapapeles.'); }
+    catch (err) { snack('No se pudo copiar.'); }
   };
 }
 
@@ -1050,18 +1056,22 @@ function start(id, mode) {
   pool = shuffle(pool.slice()).sort((a, b) => box(a) - box(b));
   const q = shuffle(pool.slice(0, 20));
   S = { d, mode, q, i: 0, shown: false, right: 0, wrong: 0, again: new Set(), answered: false };
+  window.scrollTo(0, 0);
   mode === 'art' ? renderArt() : renderCard();
 }
 
-function head() {
-  return '<div class="top"><button class="ghost" id="back" aria-label="Volver">←</button><h1>' + esc(S.d.title) + '</h1><span class="prog">' + Math.min(S.i + 1, S.q.length) + '/' + S.q.length + '</span></div>';
+function sessionTop() {
+  setBar(S.d.title, true);
+  const pct = Math.round(100 * Math.min(S.i, S.q.length) / S.q.length);
+  return '<div class="s-top"><div class="md-progress" role="progressbar" aria-label="Avance de la sesión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></div>' +
+    '<span class="t-label-l">' + Math.min(S.i + 1, S.q.length) + ' / ' + S.q.length + '</span></div>';
 }
-function bindBack() { $('#back').onclick = home; }
 function finish() {
-  app.innerHTML = '<div class="top"><button class="ghost" id="back">←</button><h1>' + esc(S.d.title) + '</h1></div>' +
-    '<div class="done"><h2>Sesión lista</h2><p class="prog">' + S.right + ' acertadas · ' + S.wrong + ' para repasar</p>' +
-    '<div class="row" style="margin-top:18px"><button class="btn pri" id="again">Otra sesión</button><button class="btn" id="hm">Ver decks</button></div></div>';
-  $('#back').onclick = $('#hm').onclick = home;
+  setBar(S.d.title, true);
+  app.innerHTML = '<div class="session"><div class="done"><span class="md-icon fill" style="width:48px;height:48px;font-size:48px;color:var(--md-success)" aria-hidden="true">check_circle</span>' +
+    '<h2 class="t-headline-s">Sesión lista</h2><p class="t-body-l muted">' + S.right + ' acertadas · ' + S.wrong + ' para repasar</p>' +
+    '<div class="md-row"><button class="md-btn filled" id="again">Otra sesión</button><button class="md-btn outlined" id="hm">Ver decks</button></div></div></div>';
+  $('#hm').onclick = home;
   $('#again').onclick = () => start(S.d.id, S.mode);
 }
 function grade(w, ok) {
@@ -1072,7 +1082,7 @@ function grade(w, ok) {
 
 /* Tarjetas */
 function german(w) {
-  const a = w.art ? '<span class="art ' + w.art + '">' + w.art + '</span> ' : '';
+  const a = w.art ? '<span class="art md-gender-' + w.art + '">' + w.art + '</span> ' : '';
   return a + esc(w.de);
 }
 function renderCard() {
@@ -1081,22 +1091,21 @@ function renderCard() {
   let c;
   if (!S.shown) {
     c = front
-      ? '<div class="tag">Español</div><div class="de" style="font-size:2rem">' + esc(w.es) + '</div><div class="sub">' + (w.t === 'n' ? 'sustantivo' : w.t === 'v' ? 'verbo' : w.t === 'a' ? 'adjetivo' : 'palabra') + '</div>'
-      : '<div class="tag">Alemán</div><div class="de">' + esc(w.de) + '</div>' + audioBtn(w.de);
+      ? '<span class="t-label-m cap">Español</span><div class="word t-display-s">' + esc(w.es) + '</div><p class="t-body-m muted">' + (w.t === 'n' ? 'sustantivo' : w.t === 'v' ? 'verbo' : w.t === 'a' ? 'adjetivo' : 'palabra') + '</p>'
+      : '<span class="t-label-m cap">Alemán</span><div class="word t-display-s">' + esc(w.de) + '</div>' + audioBtn(w.de);
   } else {
-    c = '<div class="de">' + german(w) + '</div>' +
-      (w.t === 'n' && w.x ? '<div class="sub">Plural: die ' + esc(w.x) + '</div>' : '') +
-      (w.t === 'v' && w.x ? '<div class="sub">' + esc(w.x) + '</div>' : '') +
-      '<div class="es">' + esc(w.es) + '</div>' + audioBtn(w.de);
+    c = '<div class="word t-display-s">' + german(w) + '</div>' +
+      (w.t === 'n' && w.x ? '<p class="t-body-l muted">Plural: die ' + esc(w.x) + '</p>' : '') +
+      (w.t === 'v' && w.x ? '<p class="t-body-l muted">' + esc(w.x) + '</p>' : '') +
+      '<p class="t-title-l">' + esc(w.es) + '</p>' + audioBtn(w.de);
   }
-  app.innerHTML = head() +
-    '<div class="seg"><button data-d="es-de" aria-pressed="' + (dir === 'es-de') + '">ES → DE</button><button data-d="de-es" aria-pressed="' + (dir === 'de-es') + '">DE → ES</button></div>' +
-    '<div class="card" id="card">' + c + '</div>' +
+  app.innerHTML = '<div class="session">' + sessionTop() +
+    '<div class="md-seg" role="group" aria-label="Dirección"><button data-d="es-de" aria-pressed="' + (dir === 'es-de') + '"><span class="md-icon" aria-hidden="true">check</span>ES → DE</button><button data-d="de-es" aria-pressed="' + (dir === 'de-es') + '"><span class="md-icon" aria-hidden="true">check</span>DE → ES</button></div>' +
+    '<section class="md-card filled flash" id="card">' + c + '</section>' +
     (S.shown
-      ? '<div class="row"><button class="btn" id="no">Repasar</button><button class="btn pri" id="yes">Lo sé</button></div>'
-      : '<div class="row"><button class="btn pri" id="flip">Mostrar respuesta</button></div>');
-  bindBack();
-  app.querySelectorAll('.seg button').forEach(b => b.onclick = () => { state.dir = b.dataset.d; lsSet('dk-ui', state); S.shown = false; renderCard(); });
+      ? '<div class="actions"><button class="md-btn outlined lg" id="no">Repasar</button><button class="md-btn filled lg" id="yes">Lo sé</button></div>'
+      : '<div class="actions"><button class="md-btn filled lg" id="flip">Mostrar respuesta</button></div>') + '</div>';
+  app.querySelectorAll('.md-seg button').forEach(b => b.onclick = () => { state.dir = b.dataset.d; lsSet('dk-ui', state); S.shown = false; renderCard(); });
   if (!S.shown) {
     $('#flip').onclick = () => { S.shown = true; renderCard(); };
     $('#card').onclick = e => { if (!e.target.closest('.snd')) { S.shown = true; renderCard(); } };
@@ -1112,19 +1121,19 @@ function renderArt() {
   if (S.i >= S.q.length) return finish();
   const w = S.q[S.i];
   const a = S.answered;
-  const btns = ['der', 'die', 'das'].map(x => '<button class="art-btn ' + x + (a ? (x === w.art ? ' right' : ' wrong') : '') + '" data-a="' + x + '"' + (a ? ' disabled' : '') + '><span>' + x + '</span></button>').join('');
-  app.innerHTML = head() +
-    '<div class="card"><div class="tag">¿Qué artículo?</div><div class="de">' + (a ? german(w) : esc(w.de)) + '</div>' +
-    (w.x ? '<div class="sub">Plural: die ' + esc(w.x) + '</div>' : '') +
-    '<div class="es">' + esc(w.es) + '</div>' + audioBtn(w.de) +
-    '<div class="fb ' + (a ? (S.lastOk ? 'ok' : 'no') : '') + '">' + (a ? (S.lastOk ? 'Correcto' : 'Era ' + w.art + ' ' + esc(w.de)) : '') + '</div></div>' +
+  const btns = ['der', 'die', 'das'].map(x => '<button class="art-btn md-gender-' + x + (a ? (x === w.art ? ' right' : (S.chosen === x ? ' wrong' : '')) : '') + '" data-a="' + x + '"' + (a ? ' disabled' : '') + '>' + x + '</button>').join('');
+  app.innerHTML = '<div class="session">' + sessionTop() +
+    '<section class="md-card filled flash"><span class="t-label-m cap">¿Qué artículo?</span><div class="word t-display-s">' + (a ? german(w) : esc(w.de)) + '</div>' +
+    (w.x ? '<p class="t-body-l muted">Plural: die ' + esc(w.x) + '</p>' : '') +
+    '<p class="t-title-l">' + esc(w.es) + '</p>' + audioBtn(w.de) +
+    '<div class="verdict t-title-m ' + (a ? (S.lastOk ? 'ok' : 'no') : '') + '" aria-live="polite">' +
+    (a ? '<span class="md-icon fill" aria-hidden="true">' + (S.lastOk ? 'check_circle' : 'cancel') + '</span>' + (S.lastOk ? 'Correcto' : 'Era ' + esc(w.art + ' ' + w.de)) : '') + '</div></section>' +
     '<div class="three">' + btns + '</div>' +
-    (a ? '<div class="row" style="margin:14px 0"><button class="btn pri" id="next">Siguiente</button></div>' + ruleBlock(w) : '');
-  bindBack();
+    (a ? '<button class="md-btn filled lg block" id="next">Siguiente</button>' + ruleBlock(w) : '') + '</div>';
   if (!a) app.querySelectorAll('.art-btn').forEach(b => b.onclick = () => {
-    S.lastOk = b.dataset.a === w.art; grade(w, S.lastOk); S.answered = true; renderArt();
+    S.chosen = b.dataset.a; S.lastOk = S.chosen === w.art; grade(w, S.lastOk); S.answered = true; renderArt();
   });
-  else $('#next').onclick = () => { S.i++; S.answered = false; renderArt(); };
+  else { $('#next').onclick = () => { S.i++; S.answered = false; renderArt(); window.scrollTo(0, 0); }; $('#next').focus({ preventScroll: true }); }
   wireAudio(); prefetch(S.q[S.i + 1]);
 }
 

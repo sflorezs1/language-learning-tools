@@ -2,192 +2,125 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F9F9FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <title>Wie spät ist es?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap">
+<link rel="stylesheet" href="../material.css">
 <style>
-/* Layout: station-sign header, then one column on phones; on desktop the clock sticks left and both readings sit on the right. */
-:root{
-  --bg:#EEEFEB; --surface:#FFFFFF; --surface-2:#E5E7E2; --ink:#14171B; --muted:#5A6068; --line:#CCCFC9;
-  --accent:#D2001B; --focus:#1456D6;
-  --good:#0E7A4B; --good-bg:#DCEFE4; --bad:#B3261E; --bad-bg:#F7DFDC;
-  --sign-bg:#14171B; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
-  --face:#F6F6F2; --hand:#14171B; --dial-accent:#D2001B;
-  --f-display:'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;
-  --f-body:'Barlow','Helvetica Neue',Arial,sans-serif;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#101215; --surface:#181B1F; --surface-2:#22262B; --ink:#ECEEEF; --muted:#9AA1A9; --line:#30353B;
-    --accent:#FF4A5E; --focus:#7FA8FF;
-    --good:#6CD39C; --good-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714;
-    --sign-bg:#1E2227; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#101215; --surface:#181B1F; --surface-2:#22262B; --ink:#ECEEEF; --muted:#9AA1A9; --line:#30353B;
-  --accent:#FF4A5E; --focus:#7FA8FF;
-  --good:#6CD39C; --good-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714;
-  --sign-bg:#1E2227; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
-  color-scheme:dark;
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0}
-body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f-body)}
-h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
-.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+/* Layout: una columna en teléfono; en pantallas anchas el reloj queda fijo a la izquierda y las dos lecturas a la derecha. */
+:root{--face:var(--md-surface-container-high);--hand:var(--md-on-surface);--dial:var(--md-primary)}
+.lead{margin:8px 0 16px;max-width:60ch}
+.ctl{display:flex;flex-direction:column;gap:8px}
+.ctl>.t-label-m{color:var(--md-on-surface-variant);text-transform:uppercase}
 
-.sign{background:var(--sign-bg);color:var(--sign-fg);border-bottom:4px solid var(--accent)}
-.sign .wrap{padding-block:20px 18px}
-.sign h1{font-size:clamp(2.1rem,8vw,3.2rem);font-weight:700;letter-spacing:.01em;line-height:1.02}
-.sign p{margin:6px 0 0;color:var(--sign-muted);font-size:15px;max-width:60ch}
-
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 20px}
-.tab{min-height:46px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:600 1.1rem var(--f-display);letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-button{font-family:inherit}
-button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-.btn{min-height:44px;padding:0 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:500 15px var(--f-body);cursor:pointer}
-.btn:hover{background:var(--surface-2)}
-.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.btn.sm{min-height:36px;padding:0 12px;font-size:14px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-:root[data-theme="dark"] .btn.primary{color:#1A0508}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#1A0508}}
-.chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink);font-size:13px;line-height:1.6}
-.chip.accent{background:var(--accent);color:#fff}
-:root[data-theme="dark"] .chip.accent{color:#1A0508}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.accent{color:#1A0508}}
-
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
-
-/* Study */
-.study{display:grid;gap:18px}
+/* Estudiar */
+.study{display:grid;gap:16px}
 @media (min-width:880px){
   .study{grid-template-columns:minmax(320px,400px) minmax(0,1fr);align-items:start}
-  .clockbox{position:sticky;top:16px}
+  .clockbox{position:sticky;top:80px}
 }
-.clockwrap{width:100%;max-width:360px;margin:0 auto;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.clockbox{display:flex;flex-direction:column;gap:16px}
+.clockwrap{width:100%;max-width:340px;margin:0 auto;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
 .clockwrap svg{display:block;width:100%;height:auto}
-.digital{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 2px}
-.dig{font:700 3.3rem/1 var(--f-display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
-.hint{margin:0 0 14px;text-align:center;color:var(--muted);font-size:13px}
-.controls{display:grid;gap:10px}
-.grp{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.grp .btn{flex:1 1 0;min-width:0}
-.gl{min-width:4.6rem;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.09em}
-.readout{display:grid;gap:14px;min-width:0}
-.rd header{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
-.rd h2{font-size:1.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
-.sent{margin:10px 0 8px;font:600 clamp(1.7rem,6vw,2.3rem)/1.15 var(--f-display);overflow-wrap:anywhere}
-.sent b{font-weight:700}
-.pat{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
-.pc{display:grid;gap:2px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
-.pc b{font:600 1.2rem var(--f-display)}
-.pc i{font-style:normal;font-size:12px;color:var(--muted)}
-.lab{margin:12px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
-.alts{list-style:none;padding:0;margin:0;display:grid;gap:4px}
-.alts b{font:600 1.15rem var(--f-display)}
-.alts small{color:var(--muted);font-size:13px;margin-left:6px}
-.why{margin:10px 0 0;color:var(--muted);font-size:15px;max-width:62ch}
-.rowbtns{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.digital{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.dig{font:400 56px/64px var(--md-font);letter-spacing:0;font-variant-numeric:tabular-nums}
+.controls{display:flex;flex-direction:column;gap:16px}
+.readout{display:flex;flex-direction:column;gap:16px;min-width:0}
+.rd{display:flex;flex-direction:column;gap:12px}
+.rd-head{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+.sent{font:400 28px/36px var(--md-font);letter-spacing:0;overflow-wrap:anywhere}
+.sent b{font-weight:500;color:var(--md-primary)}
+.pat{display:flex;gap:8px;flex-wrap:wrap}
+.pc{display:flex;flex-direction:column;padding:8px 12px;border:1px solid var(--md-outline-variant);border-radius:8px}
+.pc b{font:500 16px/24px var(--md-font);letter-spacing:.15px}
+.pc i{font:400 12px/16px var(--md-font);font-style:normal;color:var(--md-on-surface-variant)}
+.alts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.alts b{font-weight:500}
+.alts small{margin-left:8px;color:var(--md-on-surface-variant);font-size:13px}
 
-/* Dial */
-.c-face{fill:var(--face);stroke:var(--hand);stroke-width:5}
-.c-tick{stroke:var(--hand);stroke-linecap:butt}
-.c-num{fill:var(--hand);font:600 15px var(--f-body);text-anchor:middle;dominant-baseline:central}
-.c-num.ref{fill:#fff}
-.c-ref{fill:var(--dial-accent)}
-.c-arc{fill:none;stroke:var(--dial-accent);stroke-width:5;opacity:.45}
-.c-lab{fill:var(--hand);opacity:.4;font:600 9px var(--f-body);text-anchor:middle;dominant-baseline:central;letter-spacing:.06em}
-.c-lab.on{fill:var(--dial-accent);opacity:1}
+/* Reloj */
+.c-face{fill:var(--face);stroke:var(--md-outline);stroke-width:3}
+.c-tick{stroke:var(--md-on-surface-variant);stroke-linecap:butt}
+.c-num{fill:var(--md-on-surface);font:500 15px var(--md-font);text-anchor:middle;dominant-baseline:central}
+.c-num.ref{fill:var(--md-on-primary)}
+.c-ref{fill:var(--dial)}
+.c-arc{fill:none;stroke:var(--dial);stroke-width:5;opacity:.45}
+.c-lab{fill:var(--md-on-surface-variant);opacity:.7;font:500 9px var(--md-font);text-anchor:middle;dominant-baseline:central;letter-spacing:.06em}
+.c-lab.on{fill:var(--dial);opacity:1}
 .c-hand{fill:var(--hand)}
 .c-hub{fill:var(--hand)}
-.c-dot{fill:var(--dial-accent)}
+.c-dot{fill:var(--dial)}
 
-/* Practice */
-.stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}
-.stats b{color:var(--ink);font:700 1.5rem/1 var(--f-display);margin-left:6px;font-variant-numeric:tabular-nums}
-.qtop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.qclock{max-width:280px;margin:6px auto 4px}
+/* Practicar */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.stat{display:flex;flex-direction:column;padding:12px 16px}
+.stat .t-label-m{color:var(--md-on-surface-variant)}
+.stat b{font:400 24px/32px var(--md-font);font-variant-numeric:tabular-nums}
+.quiz{display:flex;flex-direction:column;gap:16px}
+.qtop{display:flex;gap:8px;flex-wrap:wrap}
+.qclock{width:100%;max-width:260px;margin:0 auto}
 .qclock svg{display:block;width:100%;height:auto}
-.qdp{display:flex;justify-content:center;margin-bottom:6px}
-.qprompt{text-align:center;margin:10px 0 14px}
-.qphrase{font:700 clamp(1.9rem,8vw,2.8rem)/1.1 var(--f-display);text-align:center;margin:10px 0 4px;overflow-wrap:anywhere}
-.opts{display:grid;gap:10px;grid-template-columns:1fr}
+.qprompt{text-align:center}
+.qphrase{text-align:center;font:400 32px/40px var(--md-font);letter-spacing:0;overflow-wrap:anywhere}
+.opts{display:grid;gap:12px;grid-template-columns:1fr}
 @media (min-width:560px){.opts{grid-template-columns:1fr 1fr}}
-.opt{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 14px;text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font:600 1.3rem/1.2 var(--f-display);cursor:pointer;min-width:0}
-.opt:hover:not(:disabled){background:var(--surface-2)}
-.opt .k{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--surface-2);font:600 13px var(--f-body);color:var(--muted);flex:none}
-.opt .t{flex:1;min-width:0;overflow-wrap:anywhere}
-.opt .mk{font:700 1rem var(--f-body);flex:none}
-.opt:disabled{cursor:default;color:var(--ink)}
-.opt.ok{border-color:var(--good);background:var(--good-bg)}
-.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
 .opts.clocks{grid-template-columns:1fr 1fr}
-.optc{display:grid;gap:6px;justify-items:center;padding:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;cursor:pointer;min-width:0}
-.optc:hover:not(:disabled){background:var(--surface-2)}
-.optc:disabled{cursor:default}
+.opt,.optc{position:relative;overflow:hidden;border:1px solid var(--md-outline);border-radius:12px;background:transparent;color:var(--md-on-surface);cursor:pointer;min-width:0;text-align:left;-webkit-tap-highlight-color:transparent}
+.opt::before,.optc::before{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .15s}
+.opt:hover:not(:disabled)::before,.optc:hover:not(:disabled)::before{opacity:.08}
+.opt{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 16px 8px 12px;font:500 16px/24px var(--md-font);letter-spacing:.15px}
+.opt .k{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--md-surface-container-highest);color:var(--md-on-surface-variant);font:500 13px/16px var(--md-font)}
+.opt .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.optc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;text-align:center}
 .optc svg{display:block;width:100%;max-width:150px;height:auto}
-.optc .cap{font:600 1.15rem var(--f-display);min-height:1.5em;font-variant-numeric:tabular-nums}
-.optc.ok{border-color:var(--good);background:var(--good-bg)}
-.optc.bad{border-color:var(--bad);background:var(--bad-bg)}
-.fb{margin-top:16px;padding:14px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2)}
-.fb.ok{border-color:var(--good)}
-.fb.bad{border-color:var(--bad)}
-.fb h3{font-size:1.4rem;font-weight:700;letter-spacing:.02em}
-.fb.ok h3{color:var(--good)}
-.fb.bad h3{color:var(--bad)}
-.fbl{margin:8px 0 0;font-size:15px}
-.fbl b{font:600 1.2rem var(--f-display)}
-.settings{margin-top:18px;display:grid;gap:12px}
-.seg{display:flex;gap:6px;flex-wrap:wrap}
-.seg .btn{flex:1 1 auto}
+.optc .cap{min-height:24px;font:500 16px/24px var(--md-font);font-variant-numeric:tabular-nums}
+.opt:disabled,.optc:disabled{cursor:default;color:var(--md-on-surface)}
+.opt.ok,.optc.ok{border-color:transparent;background:var(--md-success-container);color:var(--md-on-success-container)}
+.opt.bad,.optc.bad{border-color:transparent;background:var(--md-error-container);color:var(--md-on-error-container)}
+.opt.ok .k,.opt.bad .k{background:transparent;color:inherit}
+.fbk{display:flex;flex-direction:column;gap:8px}
+.fbk h3{font:500 16px/24px var(--md-font);letter-spacing:.15px}
+.settings{display:flex;flex-direction:column;gap:16px;margin-top:16px}
 
-/* Table */
-.rule{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}
-.rule div{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
-.rule b{display:block;font:700 1.35rem var(--f-display);letter-spacing:.02em}
-.rule span{color:var(--muted);font-size:14px}
-.hourbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.hourbar .big{font:700 1.8rem var(--f-display);min-width:5.5rem;text-align:center;font-variant-numeric:tabular-nums}
-.trows{list-style:none;margin:0;padding:0;display:grid;gap:6px}
-.trow{display:grid;grid-template-columns:4.6rem minmax(0,1fr);gap:2px 14px;width:100%;text-align:left;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer;font:inherit;align-items:start}
-.trow:hover{background:var(--surface-2)}
-.trow .td{grid-row:span 2;font:700 1.7rem/1.1 var(--f-display);font-variant-numeric:tabular-nums}
-.trow .lb{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
-.trow .cell{min-width:0;overflow-wrap:anywhere}
-.trow .v{font:600 1.15rem/1.25 var(--f-display)}
-.trow .alt{display:block;color:var(--muted);font-size:13px}
-@media (min-width:760px){
-  .trow{grid-template-columns:5rem minmax(0,1fr) minmax(0,1fr)}
-  .trow .td{grid-row:auto}
-}
-
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(92vw,420px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
-#toast.show{opacity:1}
-@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+/* Tabla */
+.rules3{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));margin-bottom:16px}
+.rules3 .md-card{padding:12px 16px}
+.rules3 b{display:block;font:500 20px/28px var(--md-font);letter-spacing:0}
+.hourbar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.hourbar .big{min-width:5rem;text-align:center;font:400 28px/36px var(--md-font);letter-spacing:0;font-variant-numeric:tabular-nums}
+.trows{overflow:hidden;padding:0}
+.trow .td{flex:none;min-width:4.4rem;font:400 22px/28px var(--md-font);letter-spacing:0;font-variant-numeric:tabular-nums}
+.trow .md-body{display:flex;flex-direction:column;gap:2px}
+.trow .lb{display:inline-block;min-width:5.2rem;color:var(--md-on-surface-variant);font:500 12px/16px var(--md-font);letter-spacing:.5px;text-transform:uppercase}
+.trow .v{font:400 16px/24px var(--md-font);overflow-wrap:anywhere}
+.trow .alt{display:block;margin-left:5.2rem;color:var(--md-on-surface-variant);font-size:13px;line-height:18px}
 </style>
 </head>
 <body>
 
-<header class="sign">
-  <div class="wrap">
+<header class="md-top">
+  <div class="md-top-in">
+    <a class="md-icon-btn" href="../" aria-label="Todas las herramientas"><span class="md-icon" aria-hidden="true">arrow_back</span></a>
     <h1>Wie spät ist es?</h1>
-    <p>La hora en alemán: lectura formal (24 h) y lectura coloquial (halb, Viertel, vor, nach).</p>
   </div>
 </header>
 
-<main class="wrap">
-  <nav class="tabs" role="tablist" aria-label="Secciones">
-    <button class="tab" role="tab" data-tab="study" aria-selected="true">Estudiar</button>
-    <button class="tab" role="tab" data-tab="practice" aria-selected="false">Practicar</button>
-    <button class="tab" role="tab" data-tab="table" aria-selected="false">Tabla</button>
-  </nav>
+<main class="md-main">
+  <p class="t-body-l muted lead">La hora en alemán: lectura formal (24 h) y lectura coloquial (halb, Viertel, vor, nach).</p>
   <section id="view" role="tabpanel"></section>
 </main>
-<div id="toast" role="status" aria-live="polite"></div>
+
+<nav class="md-nav" role="tablist" aria-label="Secciones">
+  <div class="md-nav-in">
+    <button class="md-nav-item" role="tab" data-tab="study" aria-selected="true"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">school</span></span><span>Estudiar</span></button>
+    <button class="md-nav-item" role="tab" data-tab="practice" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">quiz</span></span><span>Practicar</span></button>
+    <button class="md-nav-item" role="tab" data-tab="table" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">table_rows</span></span><span>Tabla</span></button>
+  </div>
+</nav>
+<div class="md-snack" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /*LOGIC*/
@@ -296,6 +229,8 @@ const pick=function(a){return a[Math.floor(Math.random()*a.length)];};
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
 const norm=function(T){return ((T%1440)+1440)%1440;};
 const hasSpeech='speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
+const ic=function(name,fill){return '<span class="md-icon'+(fill?' fill':'')+'" aria-hidden="true">'+name+'</span>';};
+const chip=function(label,pressed,attrs){return '<button class="md-chip" aria-pressed="'+pressed+'" '+attrs+'>'+ic('check')+label+'</button>';};
 
 /* ---------- Dial ---------- */
 function pt(deg,r){const a=deg*Math.PI/180;return [100+r*Math.sin(a),100-r*Math.cos(a)];}
@@ -330,7 +265,7 @@ function clockSVG(h,m,o){
   return s+'</svg>';
 }
 
-/* ---------- Voice ---------- */
+/* ---------- Voz ---------- */
 let toastT=null;
 function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
@@ -348,21 +283,29 @@ function speak(text){
   }catch(e){toast('No se pudo reproducir el audio.');}
 }
 function speakBtn(text){
-  return hasSpeech?'<button class="btn sm" data-say="'+esc(text)+'">Escuchar</button>':'';
+  return hasSpeech?'<button class="md-btn tonal has-icon" data-say="'+esc(text)+'">'+ic('volume_up')+'Escuchar</button>':'';
 }
 
-/* ---------- Study ---------- */
+/* ---------- Estudiar ---------- */
 function studyHTML(){
   return '<div class="study">'+
-  '<div class="panel clockbox">'+
+  '<div class="md-card elevated clockbox">'+
     '<div class="clockwrap" id="clockwrap"></div>'+
-    '<div class="digital"><span class="dig" id="dig"></span><span class="chip" id="dp"></span></div>'+
-    '<p class="hint">Arrastra sobre el reloj para mover los minutos.</p>'+
+    '<div class="digital"><span class="dig" id="dig"></span><span class="md-chip static" id="dp"></span></div>'+
+    '<p class="t-body-s muted" style="text-align:center">Arrastra sobre el reloj para mover los minutos.</p>'+
     '<div class="controls">'+
-      '<div class="grp"><span class="gl">Hora</span><button class="btn" data-act="h-">−1 h</button><button class="btn" data-act="h+">+1 h</button></div>'+
-      '<div class="grp"><span class="gl">Minutos</span><button class="btn" data-act="m-" id="mminus"></button><button class="btn" data-act="m+" id="mplus"></button></div>'+
-      '<div class="grp"><button class="btn" data-act="ampm">Mañana / tarde</button><button class="btn" data-act="rand">Al azar</button><button class="btn" data-act="now">Hora actual</button></div>'+
-      '<div class="grp"><button class="btn" data-act="step5" id="b5" aria-pressed="true">De 5 en 5</button><button class="btn" data-act="step1" id="b1" aria-pressed="false">Minuto exacto</button><button class="btn" data-act="help" id="bh" aria-pressed="true">Ayudas</button></div>'+
+      '<div class="ctl"><span class="t-label-m">Hora</span><div class="md-row">'+
+        '<button class="md-btn outlined has-icon" data-act="h-">'+ic('remove')+'1 h</button>'+
+        '<button class="md-btn outlined has-icon" data-act="h+">'+ic('add')+'1 h</button></div></div>'+
+      '<div class="ctl"><span class="t-label-m">Minutos</span><div class="md-row">'+
+        '<button class="md-btn outlined has-icon" data-act="m-">'+ic('remove')+'<span id="mminus"></span></button>'+
+        '<button class="md-btn outlined has-icon" data-act="m+">'+ic('add')+'<span id="mplus"></span></button></div></div>'+
+      '<div class="md-row">'+
+        '<button class="md-btn tonal has-icon" data-act="ampm">'+ic('swap_vert')+'Mañana / tarde</button>'+
+        '<button class="md-btn tonal has-icon" data-act="rand">'+ic('shuffle')+'Al azar</button>'+
+        '<button class="md-btn tonal has-icon" data-act="now">'+ic('schedule')+'Hora actual</button></div>'+
+      '<div class="md-seg" role="group" aria-label="Paso de minutos"><button id="b5" data-act="step5" aria-pressed="true">'+ic('check')+'De 5 en 5</button><button id="b1" data-act="step1" aria-pressed="false">'+ic('check')+'Minuto exacto</button></div>'+
+      '<label class="md-switch"><input type="checkbox" id="bh" role="switch" data-act="help" checked><span class="track"><span class="thumb"></span></span><span class="t-body-l">Ayudas en el reloj</span></label>'+
     '</div>'+
   '</div>'+
   '<div class="readout" id="readout"></div>'+
@@ -375,22 +318,22 @@ function readoutHTML(h,m,c){
     (m>0?'<span class="pc"><b>'+esc(num(m))+'</b><i>minutos</i></span>':'');
   let alts='';
   if(c.alts.length){
-    alts='<p class="lab">También se dice</p><ul class="alts">'+c.alts.map(function(a){
+    alts='<p class="t-label-m muted">También se dice</p><ul class="alts t-body-l">'+c.alts.map(function(a){
       return '<li><b>'+esc(a.text)+'</b><small>'+esc(a.note)+'</small></li>';}).join('')+'</ul>';
   }
-  return '<article class="panel rd">'+
-    '<header><h2>Lectura formal</h2><span class="chip">24 h · horarios, radio, citas</span></header>'+
+  return '<article class="md-card elevated rd">'+
+    '<header class="rd-head"><h2 class="t-title-l">Lectura formal</h2><span class="md-chip static">24 h · horarios, radio, citas</span></header>'+
     '<p class="sent">Es ist <b>'+esc(f)+'</b>.</p>'+
     '<div class="pat">'+pat+'</div>'+
-    '<p class="why">'+esc(formalWhy(h,m))+' '+esc(dp[0])+' = '+esc(dp[1])+'.</p>'+
-    '<div class="rowbtns">'+speakBtn('Es ist '+f)+'</div>'+
+    '<p class="t-body-m muted">'+esc(formalWhy(h,m))+' '+esc(dp[0])+' = '+esc(dp[1])+'.</p>'+
+    '<div class="md-row">'+speakBtn('Es ist '+f)+'</div>'+
   '</article>'+
-  '<article class="panel rd">'+
-    '<header><h2>Lectura coloquial</h2><span class="chip">12 h · conversación diaria</span></header>'+
+  '<article class="md-card elevated rd">'+
+    '<header class="rd-head"><h2 class="t-title-l">Lectura coloquial</h2><span class="md-chip static">12 h · conversación diaria</span></header>'+
     '<p class="sent">Es ist <b>'+esc(c.main)+'</b>.</p>'+
     alts+
-    '<p class="why">'+esc(c.why)+'</p>'+
-    '<div class="rowbtns">'+speakBtn('Es ist '+c.main)+'</div>'+
+    '<p class="t-body-m muted">'+esc(c.why)+'</p>'+
+    '<div class="md-row">'+speakBtn('Es ist '+c.main)+'</div>'+
   '</article>';
 }
 function updateStudy(){
@@ -399,11 +342,11 @@ function updateStudy(){
   document.getElementById('dig').textContent=pad(h)+':'+pad(m);
   document.getElementById('dp').textContent=dp[0]+' · '+dp[1];
   document.getElementById('readout').innerHTML=readoutHTML(h,m,c);
-  document.getElementById('mminus').textContent='−'+st.step+' min';
-  document.getElementById('mplus').textContent='+'+st.step+' min';
+  document.getElementById('mminus').textContent=st.step+' min';
+  document.getElementById('mplus').textContent=st.step+' min';
   document.getElementById('b5').setAttribute('aria-pressed',st.step===5);
   document.getElementById('b1').setAttribute('aria-pressed',st.step===1);
-  document.getElementById('bh').setAttribute('aria-pressed',st.help);
+  document.getElementById('bh').checked=st.help;
 }
 function snap5(){
   const st=S.study;
@@ -436,30 +379,32 @@ function bindDrag(){
   w.addEventListener('pointerup',end);w.addEventListener('pointercancel',end);
 }
 
-/* ---------- Table ---------- */
+/* ---------- Tabla ---------- */
 function tableHTML(){
   const h=S.tableH, dp=daypart(h);
   let rows='';
   for(let m=0;m<60;m+=5){
     const c=colloq(h,m);
     const alt=c.alts.length?'<span class="alt">también: '+c.alts.map(function(a){return esc(a.text);}).join(' · ')+'</span>':'';
-    rows+='<li><button class="trow" data-act="load" data-h="'+h+'" data-m="'+m+'">'+
+    rows+='<li><button class="md-list-item trow" data-act="load" data-h="'+h+'" data-m="'+m+'">'+
       '<span class="td">'+pad(h)+':'+pad(m)+'</span>'+
-      '<span class="cell"><span class="lb">Formal</span><span class="v">'+esc(formal(h,m))+'</span></span>'+
-      '<span class="cell"><span class="lb">Coloquial</span><span class="v">'+esc(c.main)+'</span>'+alt+'</span>'+
+      '<span class="md-body">'+
+        '<span><span class="lb">Formal</span><span class="v">'+esc(formal(h,m))+'</span></span>'+
+        '<span><span class="lb">Coloquial</span><span class="v">'+esc(c.main)+'</span>'+alt+'</span>'+
+      '</span>'+ic('chevron_right').replace('md-icon','md-icon trail')+
     '</button></li>';
   }
-  return '<div class="rule">'+
-    '<div><b>:01 – :24</b><span>minutos + <em>nach</em> + hora actual</span></div>'+
-    '<div><b>:25 – :35</b><span><em>halb</em> como referencia, con la hora siguiente</span></div>'+
-    '<div><b>:36 – :59</b><span>minutos que faltan + <em>vor</em> + hora siguiente</span></div>'+
+  return '<div class="rules3">'+
+    '<div class="md-card filled"><b>:01 – :24</b><span class="t-body-m muted">minutos + <em>nach</em> + hora actual</span></div>'+
+    '<div class="md-card filled"><b>:25 – :35</b><span class="t-body-m muted"><em>halb</em> como referencia, con la hora siguiente</span></div>'+
+    '<div class="md-card filled"><b>:36 – :59</b><span class="t-body-m muted">minutos que faltan + <em>vor</em> + hora siguiente</span></div>'+
   '</div>'+
-  '<div class="hourbar"><button class="btn" data-act="th-">−1 h</button><span class="big">'+pad(h)+' h</span><button class="btn" data-act="th+">+1 h</button><span class="chip">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>'+
-  '<p class="hint" style="text-align:left">Toca una fila para verla en el reloj.</p>'+
-  '<ul class="trows">'+rows+'</ul>';
+  '<div class="hourbar"><button class="md-icon-btn" data-act="th-" aria-label="Hora anterior">'+ic('chevron_left')+'</button><span class="big">'+pad(h)+' h</span><button class="md-icon-btn" data-act="th+" aria-label="Hora siguiente">'+ic('chevron_right')+'</button><span class="md-chip static">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>'+
+  '<p class="t-body-s muted" style="margin-bottom:8px">Toca una fila para verla en el reloj.</p>'+
+  '<ul class="md-list md-card outlined trows">'+rows+'</ul>';
 }
 
-/* ---------- Practice ---------- */
+/* ---------- Practicar ---------- */
 function keyOf(mode,h,m){
   if(mode==='colloq') return colloq(h,m).main;
   if(mode==='formal') return formal(h,m);
@@ -514,7 +459,7 @@ function quizHTML(){
   let body='';
   if(q.type==='clock'){
     const phrase=q.pk==='colloq'?'Es ist '+c.main:'Es ist '+f;
-    body+='<p class="qphrase">'+esc(phrase)+'</p><p class="qprompt">¿Qué reloj muestra esta hora?</p>';
+    body+='<p class="qphrase">'+esc(phrase)+'</p><p class="qprompt t-body-l muted">¿Qué reloj muestra esta hora?</p>';
     body+='<div class="opts clocks">'+q.options.map(function(o,i){
       const cls=done?(o.correct?' ok':(S.answered===i?' bad':'')):'';
       const cap=done?(((o.h%12)||12)+':'+pad(o.m)):'&nbsp;';
@@ -523,36 +468,38 @@ function quizHTML(){
     }).join('')+'</div>';
   } else {
     body+='<div class="qclock">'+clockSVG(q.h,q.m,{})+'</div>';
-    body+='<div class="qdp"><span class="chip">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>';
-    body+='<p class="qprompt">'+(q.type==='colloq'?'¿Cómo se dice en lenguaje coloquial?':'¿Cómo se lee en formal (24 h)?')+'</p>';
+    body+='<div class="md-row" style="justify-content:center"><span class="md-chip static">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>';
+    body+='<p class="qprompt t-body-l muted">'+(q.type==='colloq'?'¿Cómo se dice en lenguaje coloquial?':'¿Cómo se lee en formal (24 h)?')+'</p>';
     body+='<div class="opts">'+q.options.map(function(o,i){
       const txt=q.type==='colloq'?colloq(o.h,o.m).main:formal(o.h,o.m);
       const cls=done?(o.correct?' ok':(S.answered===i?' bad':'')):'';
-      const mk=done?(o.correct?'✓':(S.answered===i?'✕':'')):'';
-      return '<button class="opt'+cls+'" data-opt="'+i+'"'+(done?' disabled':'')+'><span class="k">'+(i+1)+'</span><span class="t">'+esc(txt)+'</span><span class="mk" aria-hidden="true">'+mk+'</span></button>';
+      const mk=done?(o.correct?ic('check_circle',true):(S.answered===i?ic('cancel',true):'')):'';
+      return '<button class="opt'+cls+'" data-opt="'+i+'"'+(done?' disabled':'')+'><span class="k">'+(i+1)+'</span><span class="t">'+esc(txt)+'</span>'+mk+'</button>';
     }).join('')+'</div>';
   }
   let fb='';
   if(done){
     const ok=q.options[S.answered].correct;
     const why=(q.pk==='formal')?formalWhy(q.h,q.m):c.why;
-    fb='<div class="fb '+(ok?'ok':'bad')+'" role="status">'+
+    fb='<div class="md-card fbk '+(ok?'c-success':'c-error')+'" role="status">'+
       '<h3>'+(ok?'¡Richtig!':'Todavía no')+' · '+pad(q.h)+':'+pad(q.m)+'</h3>'+
-      '<p class="fbl">Formal: <b>Es ist '+esc(f)+'</b></p>'+
-      '<p class="fbl">Coloquial: <b>Es ist '+esc(c.main)+'</b></p>'+
-      '<p class="why">'+esc(why)+'</p>'+
-      '<div class="rowbtns"><button class="btn primary" data-act="next" id="nextbtn">Siguiente</button>'+
+      '<p class="t-body-m">Formal: <b>Es ist '+esc(f)+'</b></p>'+
+      '<p class="t-body-m">Coloquial: <b>Es ist '+esc(c.main)+'</b></p>'+
+      '<p class="t-body-m">'+esc(why)+'</p>'+
+      '<div class="md-row" style="margin-top:4px"><button class="md-btn filled" data-act="next" id="nextbtn">Siguiente</button>'+
       speakBtn('Es ist '+(q.pk==='formal'?f:c.main))+'</div>'+
     '</div>';
   }
-  const stats='<div class="stats"><span>Racha<b>'+S.streak+'</b></span><span>Mejor racha<b>'+S.best+'</b></span><span>Aciertos<b>'+S.correct+'/'+S.total+'</b></span></div>';
-  const settings='<div class="panel settings">'+
-    '<div><p class="lab" style="margin-top:0">Nivel</p><div class="seg">'+[1,2,3].map(function(l){
-      return '<button class="btn" data-act="level" data-v="'+l+'" aria-pressed="'+(S.level===l)+'">'+LVL[l]+'</button>';}).join('')+'</div></div>'+
-    '<div><p class="lab" style="margin-top:0">Tipos de ejercicio</p><div class="seg">'+ALLT.map(function(t){
-      return '<button class="btn" data-act="type" data-v="'+t+'" aria-pressed="'+(S.types.indexOf(t)>=0)+'">'+TLAB[t]+'</button>';}).join('')+'</div></div>'+
+  const stats='<div class="stats"><div class="md-card filled stat"><span class="t-label-m">Racha</span><b>'+S.streak+'</b></div>'+
+    '<div class="md-card filled stat"><span class="t-label-m">Mejor racha</span><b>'+S.best+'</b></div>'+
+    '<div class="md-card filled stat"><span class="t-label-m">Aciertos</span><b>'+S.correct+'/'+S.total+'</b></div></div>';
+  const settings='<div class="md-card outlined settings">'+
+    '<div class="ctl"><span class="t-label-m">Nivel</span><div class="md-chips">'+[1,2,3].map(function(l){
+      return chip(LVL[l],S.level===l,'data-act="level" data-v="'+l+'"');}).join('')+'</div></div>'+
+    '<div class="ctl"><span class="t-label-m">Tipos de ejercicio</span><div class="md-chips">'+ALLT.map(function(t){
+      return chip(TLAB[t],S.types.indexOf(t)>=0,'data-act="type" data-v="'+t+'"');}).join('')+'</div></div>'+
   '</div>';
-  return stats+'<div class="panel"><div class="qtop"><span class="chip">'+TLAB[q.type]+'</span>'+(q.retry?'<span class="chip accent">Repaso de un fallo</span>':'')+'</div>'+body+fb+'</div>'+settings;
+  return stats+'<div class="md-card elevated quiz"><div class="qtop"><span class="md-chip static">'+TLAB[q.type]+'</span>'+(q.retry?'<span class="md-chip static accent">Repaso de un fallo</span>':'')+'</div>'+body+fb+'</div>'+settings;
 }
 function renderPractice(){
   view.innerHTML=quizHTML();
@@ -568,18 +515,18 @@ function answer(i){
 }
 function nextQ(){newQuestion();renderPractice();}
 
-/* ---------- Tabs + events ---------- */
+/* ---------- Navegación y eventos ---------- */
 function setTab(t){
   S.tab=t;
-  document.querySelectorAll('.tab').forEach(function(b){
+  document.querySelectorAll('.md-nav-item').forEach(function(b){
     const on=b.dataset.tab===t;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
   });
   if(t==='study'){view.innerHTML=studyHTML();updateStudy();bindDrag();}
   else if(t==='practice'){if(!S.q)newQuestion();renderPractice();}
   else{view.innerHTML=tableHTML();}
 }
-document.querySelector('.tabs').addEventListener('click',function(e){
-  const b=e.target.closest('.tab');if(b)setTab(b.dataset.tab);
+document.querySelector('.md-nav').addEventListener('click',function(e){
+  const b=e.target.closest('.md-nav-item');if(b){setTab(b.dataset.tab);window.scrollTo(0,0);}
 });
 view.addEventListener('click',function(e){
   const say=e.target.closest('[data-say]');
@@ -600,7 +547,7 @@ view.addEventListener('click',function(e){
     else if(a==='now'){const d=new Date();st.h=d.getHours();st.m=d.getMinutes();if(st.step===5)snap5();}
     else if(a==='step5'){st.step=5;snap5();}
     else if(a==='step1')st.step=1;
-    else if(a==='help')st.help=!st.help;
+    else if(a==='help')st.help=b.checked;
     updateStudy();
   } else if(S.tab==='table'){
     if(a==='th-'){S.tableH=(S.tableH+23)%24;view.innerHTML=tableHTML();}

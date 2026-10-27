@@ -2,46 +2,49 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F9F9FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 <title>Language Learning Tools</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap">
+<link rel="stylesheet" href="material.css">
 <style>
-/* Layout: una columna centrada, una fila por herramienta. Para agregar una, copia un <li> y cambia carpeta, nombre y descripción. */
-:root{
-  --bg:#f2f5f9; --surface:#ffffff; --ink:#14202e; --muted:#5d6b7c; --line:#dbe2ea; --accent:#2b6bd6;
-  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
-  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0e141c; --surface:#17202b; --ink:#e7edf4; --muted:#93a1b2; --line:#263344; --accent:#6fa0ff; color-scheme:dark;}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.45 var(--body);padding:0 16px}
-main{max-width:600px;margin:0 auto;padding:40px 0 56px}
-h1{font:700 2rem/1.1 var(--display);letter-spacing:-.01em;margin:0 0 6px}
-.lede{margin:0 0 28px;color:var(--muted)}
-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-a.tool{display:flex;flex-direction:column;gap:4px;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:14px;color:inherit;text-decoration:none}
-a.tool:hover{border-color:var(--accent)}
-a.tool:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.name{font:700 1.2rem/1.2 var(--display)}
-.desc{color:var(--muted);font-size:.97rem}
-.path{font-size:.8rem;color:var(--muted);letter-spacing:.04em}
+.lead{margin:8px 0 24px}
+.tools{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+.tools .md-card{height:100%}
 </style>
 </head>
 <body>
-<main>
-  <h1>Language Learning Tools</h1>
-  <p class="lede">Herramientas pequeñas para practicar idiomas.</p>
-  <ul>
-    <li><a class="tool" href="easy-vokab-trainer/">
-      <span class="name">Easy Vokab Trainer</span>
-      <span class="desc">Vocabulario alemán A1 y A2 por temas, der · die · das con reglas de género y audio de Wiktionary.</span>
-      <span class="path">/easy-vokab-trainer</span></a></li>
-    <li><a class="tool" href="wie-spaet-ist-es/">
-      <span class="name">Wie spät ist es?</span>
-      <span class="desc">Práctica de la hora en alemán con un reloj interactivo.</span>
-      <span class="path">/wie-spaet-ist-es</span></a></li>
+<header class="md-top">
+  <div class="md-top-in pad-start"><h1>Language Learning Tools</h1></div>
+</header>
+
+<main class="md-main no-nav">
+  <p class="t-body-l muted lead">Herramientas pequeñas para practicar idiomas.</p>
+
+  <!-- Para agregar una herramienta: copia un <li>, cambia la carpeta, el icono (nombre de Material Symbols), el título y la descripción. -->
+  <ul class="tools">
+    <li>
+      <a class="md-card elevated md-card-link md-card-row" href="easy-vokab-trainer/">
+        <span class="md-avatar"><span class="md-icon" aria-hidden="true">style</span></span>
+        <span class="md-body">
+          <span class="t-title-m" style="display:block">Easy Vokab Trainer</span>
+          <span class="t-body-m muted" style="display:block">Vocabulario alemán A1 y A2 por temas, der · die · das con reglas de género y audio.</span>
+        </span>
+        <span class="md-icon muted" aria-hidden="true">chevron_right</span>
+      </a>
+    </li>
+    <li>
+      <a class="md-card elevated md-card-link md-card-row" href="wie-spaet-ist-es/">
+        <span class="md-avatar"><span class="md-icon" aria-hidden="true">schedule</span></span>
+        <span class="md-body">
+          <span class="t-title-m" style="display:block">Wie spät ist es?</span>
+          <span class="t-body-m muted" style="display:block">La hora en alemán: lectura formal y coloquial, con un reloj interactivo.</span>
+        </span>
+        <span class="md-icon muted" aria-hidden="true">chevron_right</span>
+      </a>
+    </li>
   </ul>
 </main>
 </body>
