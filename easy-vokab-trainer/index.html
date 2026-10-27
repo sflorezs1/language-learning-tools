@@ -1,0 +1,1134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Easy Vokab Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: una columna tipo app móvil. Colores de artículo = convención de estudio: der azul, die rojo, das verde. */
+:root{
+  --bg:#f2f5f9; --surface:#ffffff; --ink:#14202e; --muted:#5d6b7c; --line:#dbe2ea;
+  --der:#2b6bd6; --die:#d2433b; --das:#2a9457; --accent:#14202e; --on-accent:#ffffff;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0e141c; --surface:#17202b; --ink:#e7edf4; --muted:#93a1b2; --line:#263344;
+  --der:#6fa0ff; --die:#ff8279; --das:#5fd38e; --accent:#e7edf4; --on-accent:#0e141c; color-scheme:dark;}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0;-webkit-tap-highlight-color:transparent}
+#app{max-width:560px;margin:0 auto;padding:18px 0 40px}
+h1,h2,.de{font-family:var(--display);margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--der);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.top h1{font-size:1.5rem;letter-spacing:-.01em;flex:1}
+.ghost{background:none;border:1px solid var(--line);border-radius:10px;padding:8px 12px;color:var(--muted)}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-family:var(--display);font-weight:700;font-size:1.05rem}
+.tab[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.deck{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.deck h2{font-size:1.1rem;line-height:1.2}
+.deck p{margin:4px 0 10px;color:var(--muted);font-size:.92rem}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;background:var(--das)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);font-weight:600}
+.btn.pri{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn[disabled]{opacity:.4;cursor:default}
+.prog{color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 20px;min-height:290px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;margin:10px 0 14px}
+.card .de{font-size:2.3rem;line-height:1.1;overflow-wrap:anywhere}
+.card .es{font-size:1.3rem}
+.card .sub{color:var(--muted);font-size:.98rem}
+.art{font-weight:700}
+.art.der{color:var(--der)}.art.die{color:var(--die)}.art.das{color:var(--das)}
+.tag{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.snd{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:8px 16px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+.snd[hidden]{display:none}
+.snd.on{border-color:var(--der);color:var(--der)}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.art-btn{padding:18px 4px;border-radius:14px;border:2px solid currentColor;background:var(--surface);font-family:var(--display);font-weight:700;font-size:1.4rem}
+.art-btn.der{color:var(--der)}.art-btn.die{color:var(--die)}.art-btn.das{color:var(--das)}
+.art-btn.right{background:currentColor}.art-btn.right span{color:var(--surface)}
+.art-btn.wrong{opacity:.35}
+.fb{min-height:1.6em;font-weight:600}
+.fb.ok{color:var(--das)}.fb.no{color:var(--die)}
+.seg{display:flex;gap:6px;justify-content:center;margin:0 0 4px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:.85rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+.foot{margin-top:22px;color:var(--muted);font-size:.85rem}
+.foot a{color:inherit}
+.done{text-align:center;padding:30px 0}
+.done h2{font-size:1.8rem;margin-bottom:6px}
+
+.rule{border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);margin-bottom:10px;text-align:left}
+.rule.g-der{background:color-mix(in srgb,var(--der) 12%,var(--surface))}
+.rule.g-die{background:color-mix(in srgb,var(--die) 12%,var(--surface))}
+.rule.g-das{background:color-mix(in srgb,var(--das) 12%,var(--surface))}
+.rule p{margin:0}
+.rule-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.end{font:600 .95rem ui-monospace,Menlo,Consolas,monospace;background:var(--surface);border:1px solid var(--line);padding:2px 9px;border-radius:6px}
+.pill{display:inline-block;font-weight:600;font-size:.82rem;padding:1px 10px;border-radius:99px;background:var(--surface);border:1.5px solid currentColor}
+.pill.der{color:var(--der)}.pill.die{color:var(--die)}.pill.das{color:var(--das)}
+.tier{font-size:.82rem;color:var(--muted)}
+.meta{font-size:.9rem;color:var(--muted)}.meta b{color:var(--ink);font-weight:600;margin-right:4px}
+.status{font-weight:600}.status.ok{color:var(--das)}.status.bad{color:var(--die)}
+.lede{color:var(--muted);margin:0 0 12px}
+input.chk{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;color:inherit;margin-bottom:8px}
+.chk-out{min-height:1.5em;margin-bottom:12px}
+.t-der{color:var(--der);font-weight:700}.t-die{color:var(--die);font-weight:700}.t-das{color:var(--das);font-weight:700}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ---------- Datos ----------
+   Formato: der|die|das|v|a|x  |  palabra  |  plural o formas  |  español
+   Selección propia de vocabulario frecuente por nivel y tema (no es copia de la lista oficial del Goethe). */
+const D = [
+{id:'a1-n100',lv:'A1',title:'Top 100 sustantivos',sub:'Los más usados en el día a día',raw:`
+der|Tag|Tage|día
+die|Zeit|Zeiten|tiempo
+das|Jahr|Jahre|año
+der|Mann|Männer|hombre
+die|Frau|Frauen|mujer
+das|Kind|Kinder|niño/a
+der|Mensch|Menschen|persona, ser humano
+das|Haus|Häuser|casa
+die|Stadt|Städte|ciudad
+das|Land|Länder|país
+die|Welt|Welten|mundo
+die|Arbeit|Arbeiten|trabajo
+das|Geld|-|dinero
+der|Freund|Freunde|amigo
+die|Freundin|Freundinnen|amiga
+die|Familie|Familien|familia
+der|Name|Namen|nombre
+die|Frage|Fragen|pregunta
+die|Antwort|Antworten|respuesta
+das|Wort|Wörter|palabra
+die|Sprache|Sprachen|idioma
+das|Buch|Bücher|libro
+die|Schule|Schulen|escuela
+der|Lehrer|Lehrer|profesor
+die|Lehrerin|Lehrerinnen|profesora
+die|Stunde|Stunden|hora
+die|Minute|Minuten|minuto
+die|Woche|Wochen|semana
+der|Monat|Monate|mes
+der|Morgen|Morgen|mañana (parte del día)
+der|Abend|Abende|tarde-noche
+die|Nacht|Nächte|noche
+das|Wasser|-|agua
+das|Essen|-|comida
+das|Brot|Brote|pan
+der|Kaffee|Kaffees|café
+der|Tee|Tees|té
+die|Milch|-|leche
+das|Auto|Autos|carro, auto
+der|Bus|Busse|bus
+der|Zug|Züge|tren
+das|Flugzeug|Flugzeuge|avión
+die|Straße|Straßen|calle
+der|Platz|Plätze|plaza, lugar
+das|Zimmer|Zimmer|habitación
+die|Wohnung|Wohnungen|apartamento
+die|Tür|Türen|puerta
+das|Fenster|Fenster|ventana
+der|Tisch|Tische|mesa
+der|Stuhl|Stühle|silla
+das|Bett|Betten|cama
+die|Küche|Küchen|cocina
+das|Bad|Bäder|baño
+der|Garten|Gärten|jardín
+das|Telefon|Telefone|teléfono
+das|Handy|Handys|celular
+der|Computer|Computer|computador
+die|Adresse|Adressen|dirección
+die|Nummer|Nummern|número
+der|Brief|Briefe|carta
+die|E-Mail|E-Mails|correo electrónico
+das|Problem|Probleme|problema
+die|Hilfe|-|ayuda
+der|Spaß|-|diversión
+das|Wetter|-|clima
+die|Sonne|Sonnen|sol
+der|Regen|-|lluvia
+die|Hand|Hände|mano
+der|Kopf|Köpfe|cabeza
+das|Auge|Augen|ojo
+der|Preis|Preise|precio
+die|Gruppe|Gruppen|grupo
+der|Termin|Termine|cita, fecha fija
+das|Ding|Dinge|cosa (objeto)
+die|Sache|Sachen|cosa, asunto
+der|Fehler|Fehler|error
+das|Beispiel|Beispiele|ejemplo
+die|Information|Informationen|información
+die|Reise|Reisen|viaje
+der|Urlaub|Urlaube|vacaciones
+das|Fest|Feste|fiesta, celebración
+die|Party|Partys|fiesta (party)
+die|Musik|-|música
+das|Lied|Lieder|canción
+der|Film|Filme|película
+das|Spiel|Spiele|juego, partido
+der|Sport|-|deporte
+das|Bild|Bilder|imagen, cuadro
+die|Zeitung|Zeitungen|periódico
+der|Bahnhof|Bahnhöfe|estación de tren
+der|Flughafen|Flughäfen|aeropuerto
+das|Hotel|Hotels|hotel
+das|Restaurant|Restaurants|restaurante
+das|Café|Cafés|cafetería
+der|Supermarkt|Supermärkte|supermercado
+die|Bank|Banken|banco
+die|Apotheke|Apotheken|farmacia
+der|Arzt|Ärzte|médico
+die|Ärztin|Ärztinnen|médica
+das|Krankenhaus|Krankenhäuser|hospital
+die|Tasche|Taschen|bolso, bolsa
+der|Schlüssel|Schlüssel|llave
+die|Uhr|Uhren|reloj, hora
+das|Ticket|Tickets|tiquete, boleto
+die|Karte|Karten|tarjeta, mapa, carta
+die|Rechnung|Rechnungen|cuenta, factura
+`},
+{id:'a1-verbs',lv:'A1',title:'Top 50 verbos',sub:'Con formas: er/sie … · Präteritum · Perfekt',raw:`
+v|sein|ist · war · ist gewesen|ser, estar
+v|haben|hat · hatte · hat gehabt|tener
+v|werden|wird · wurde · ist geworden|llegar a ser, volverse
+v|können|kann · konnte · hat gekonnt|poder, saber (hacer)
+v|müssen|muss · musste · hat gemusst|tener que
+v|wollen|will · wollte · hat gewollt|querer
+v|möchten|möchte|querer (cortés)
+v|gehen|geht · ging · ist gegangen|ir, caminar
+v|kommen|kommt · kam · ist gekommen|venir
+v|machen|macht · machte · hat gemacht|hacer
+v|sagen|sagt · sagte · hat gesagt|decir
+v|sprechen|spricht · sprach · hat gesprochen|hablar
+v|essen|isst · aß · hat gegessen|comer
+v|trinken|trinkt · trank · hat getrunken|beber
+v|sehen|sieht · sah · hat gesehen|ver
+v|hören|hört · hörte · hat gehört|oír, escuchar
+v|lesen|liest · las · hat gelesen|leer
+v|schreiben|schreibt · schrieb · hat geschrieben|escribir
+v|lernen|lernt · lernte · hat gelernt|aprender, estudiar
+v|arbeiten|arbeitet · arbeitete · hat gearbeitet|trabajar
+v|wohnen|wohnt · wohnte · hat gewohnt|vivir (residir)
+v|leben|lebt · lebte · hat gelebt|vivir (existir)
+v|heißen|heißt · hieß · hat geheißen|llamarse
+v|kaufen|kauft · kaufte · hat gekauft|comprar
+v|fahren|fährt · fuhr · ist gefahren|ir (en vehículo), conducir
+v|fliegen|fliegt · flog · ist geflogen|volar
+v|laufen|läuft · lief · ist gelaufen|correr, caminar
+v|spielen|spielt · spielte · hat gespielt|jugar, tocar
+v|schlafen|schläft · schlief · hat geschlafen|dormir
+v|stehen|steht · stand · hat gestanden|estar de pie
+v|sitzen|sitzt · saß · hat gesessen|estar sentado
+v|liegen|liegt · lag · hat gelegen|estar acostado/ubicado
+v|nehmen|nimmt · nahm · hat genommen|tomar, coger
+v|geben|gibt · gab · hat gegeben|dar
+v|finden|findet · fand · hat gefunden|encontrar
+v|suchen|sucht · suchte · hat gesucht|buscar
+v|brauchen|braucht · brauchte · hat gebraucht|necesitar
+v|mögen|mag · mochte · hat gemocht|gustar, querer
+v|wissen|weiß · wusste · hat gewusst|saber
+v|kennen|kennt · kannte · hat gekannt|conocer
+v|fragen|fragt · fragte · hat gefragt|preguntar
+v|antworten|antwortet · antwortete · hat geantwortet|responder
+v|verstehen|versteht · verstand · hat verstanden|entender
+v|helfen|hilft · half · hat geholfen|ayudar
+v|warten|wartet · wartete · hat gewartet|esperar
+v|anrufen|ruft an · rief an · hat angerufen|llamar por teléfono
+v|aufstehen|steht auf · stand auf · ist aufgestanden|levantarse
+v|anfangen|fängt an · fing an · hat angefangen|empezar
+v|bleiben|bleibt · blieb · ist geblieben|quedarse
+v|treffen|trifft · traf · hat getroffen|encontrarse con
+v|zeigen|zeigt · zeigte · hat gezeigt|mostrar
+v|kosten|kostet · kostete · hat gekostet|costar
+v|bezahlen|bezahlt · bezahlte · hat bezahlt|pagar
+v|öffnen|öffnet · öffnete · hat geöffnet|abrir
+v|schließen|schließt · schloss · hat geschlossen|cerrar
+`},
+{id:'a1-adj',lv:'A1',title:'Adjetivos y adverbios básicos',sub:'Describir, frecuencia, lugar y tiempo',raw:`
+a|gut||bueno, bien
+a|schlecht||malo, mal
+a|groß||grande, alto
+a|klein||pequeño
+a|neu||nuevo
+a|alt||viejo
+a|jung||joven
+a|schön||bonito, hermoso
+a|schnell||rápido
+a|langsam||lento
+a|teuer||caro
+a|billig||barato
+a|heiß||caliente (muy)
+a|kalt||frío
+a|warm||tibio, cálido
+a|müde||cansado
+a|krank||enfermo
+a|gesund||sano
+a|glücklich||feliz
+a|traurig||triste
+a|freundlich||amable
+a|nett||simpático, agradable
+a|richtig||correcto
+a|falsch||incorrecto, falso
+a|leicht||fácil, ligero
+a|schwer||difícil, pesado
+a|wichtig||importante
+a|interessant||interesante
+a|langweilig||aburrido
+a|lang||largo
+a|kurz||corto
+x|viel||mucho
+x|wenig||poco
+x|sehr||muy
+x|auch||también
+x|nicht||no
+x|nur||solo, solamente
+x|immer||siempre
+x|oft||a menudo
+x|manchmal||a veces
+x|nie||nunca
+x|hier||aquí
+x|dort||allí
+x|jetzt||ahora
+x|heute||hoy
+x|morgen||mañana (día siguiente)
+x|gestern||ayer
+x|schon||ya
+x|noch||todavía, aún
+x|zusammen||juntos
+x|vielleicht||quizás
+`},
+{id:'a1-family',lv:'A1',title:'Familia y personas',sub:'Parentesco y personas del entorno',raw:`
+der|Vater|Väter|padre
+die|Mutter|Mütter|madre
+der|Bruder|Brüder|hermano
+die|Schwester|Schwestern|hermana
+der|Sohn|Söhne|hijo
+die|Tochter|Töchter|hija
+die|Eltern|Eltern|padres (pl.)
+der|Großvater|Großväter|abuelo
+die|Großmutter|Großmütter|abuela
+der|Onkel|Onkel|tío
+die|Tante|Tanten|tía
+der|Cousin|Cousins|primo
+die|Cousine|Cousinen|prima
+der|Ehemann|Ehemänner|esposo
+die|Ehefrau|Ehefrauen|esposa
+das|Baby|Babys|bebé
+der|Junge|Jungen|niño, chico
+das|Mädchen|Mädchen|niña, chica
+der|Nachbar|Nachbarn|vecino
+der|Gast|Gäste|invitado, huésped
+der|Chef|Chefs|jefe
+der|Kollege|Kollegen|compañero de trabajo
+der|Verkäufer|Verkäufer|vendedor
+die|Person|Personen|persona
+die|Leute|Leute|gente (pl.)
+der|Herr|Herren|señor
+`},
+{id:'a1-food',lv:'A1',title:'Comida y bebida',sub:'Mercado, mesa y restaurante',raw:`
+der|Apfel|Äpfel|manzana
+die|Banane|Bananen|banano
+die|Orange|Orangen|naranja
+die|Tomate|Tomaten|tomate
+die|Kartoffel|Kartoffeln|papa
+der|Salat|Salate|ensalada
+das|Gemüse|-|verduras
+das|Obst|-|fruta
+das|Fleisch|-|carne
+der|Fisch|Fische|pescado
+das|Ei|Eier|huevo
+der|Käse|-|queso
+die|Butter|-|mantequilla
+der|Reis|-|arroz
+die|Nudel|Nudeln|fideo, pasta
+die|Suppe|Suppen|sopa
+der|Kuchen|Kuchen|torta, pastel
+die|Schokolade|Schokoladen|chocolate
+der|Zucker|-|azúcar
+das|Salz|-|sal
+das|Bier|Biere|cerveza
+der|Wein|Weine|vino
+der|Saft|Säfte|jugo
+das|Frühstück|Frühstücke|desayuno
+das|Mittagessen|Mittagessen|almuerzo
+das|Abendessen|Abendessen|cena
+die|Speisekarte|Speisekarten|menú, carta
+der|Hunger|-|hambre
+der|Durst|-|sed
+das|Glas|Gläser|vaso
+die|Flasche|Flaschen|botella
+der|Teller|Teller|plato
+die|Gabel|Gabeln|tenedor
+der|Löffel|Löffel|cuchara
+das|Messer|Messer|cuchillo
+`},
+{id:'a1-home',lv:'A1',title:'Casa y objetos',sub:'Muebles, cosas del día a día, animales',raw:`
+die|Lampe|Lampen|lámpara
+das|Sofa|Sofas|sofá
+der|Schrank|Schränke|armario
+das|Regal|Regale|estante
+der|Spiegel|Spiegel|espejo
+die|Dusche|Duschen|ducha
+die|Toilette|Toiletten|baño (inodoro)
+das|Schlafzimmer|Schlafzimmer|dormitorio
+das|Wohnzimmer|Wohnzimmer|sala
+der|Balkon|Balkone|balcón
+der|Keller|Keller|sótano
+der|Fernseher|Fernseher|televisor
+der|Kühlschrank|Kühlschränke|nevera
+der|Herd|Herde|estufa
+die|Waschmaschine|Waschmaschinen|lavadora
+die|Tasse|Tassen|taza
+der|Stift|Stifte|lápiz, esfero
+das|Heft|Hefte|cuaderno
+das|Papier|Papiere|papel
+die|Brille|Brillen|gafas
+der|Koffer|Koffer|maleta
+der|Rucksack|Rucksäcke|mochila
+das|Foto|Fotos|foto
+die|Kamera|Kameras|cámara
+der|Regenschirm|Regenschirme|paraguas
+die|Blume|Blumen|flor
+der|Baum|Bäume|árbol
+der|Hund|Hunde|perro
+die|Katze|Katzen|gato
+der|Vogel|Vögel|pájaro
+`},
+{id:'a1-calendar',lv:'A1',title:'Días, meses, números y colores',sub:'Calendario, estaciones y cifras clave',raw:`
+der|Montag|-|lunes
+der|Dienstag|-|martes
+der|Mittwoch|-|miércoles
+der|Donnerstag|-|jueves
+der|Freitag|-|viernes
+der|Samstag|-|sábado
+der|Sonntag|-|domingo
+der|Januar|-|enero
+der|Februar|-|febrero
+der|März|-|marzo
+der|April|-|abril
+der|Mai|-|mayo
+der|Juni|-|junio
+der|Juli|-|julio
+der|August|-|agosto
+der|September|-|septiembre
+der|Oktober|-|octubre
+der|November|-|noviembre
+der|Dezember|-|diciembre
+der|Frühling|-|primavera
+der|Sommer|-|verano
+der|Herbst|-|otoño
+der|Winter|-|invierno
+x|eins||1
+x|zwei||2
+x|drei||3
+x|vier||4
+x|fünf||5
+x|sechs||6
+x|sieben||7
+x|acht||8
+x|neun||9
+x|zehn||10
+x|zwanzig||20
+x|hundert||100
+x|tausend||1000
+a|rot||rojo
+a|blau||azul
+a|grün||verde
+a|gelb||amarillo
+a|schwarz||negro
+a|weiß||blanco
+a|grau||gris
+a|braun||café, marrón
+`},
+{id:'a1-city',lv:'A1',title:'Ciudad y transporte',sub:'Orientarse, moverse y comprar el pasaje',raw:`
+die|Haltestelle|Haltestellen|parada
+die|U-Bahn|U-Bahnen|metro
+die|Straßenbahn|Straßenbahnen|tranvía
+das|Taxi|Taxis|taxi
+das|Fahrrad|Fahrräder|bicicleta
+der|Park|Parks|parque
+die|Kirche|Kirchen|iglesia
+das|Museum|Museen|museo
+das|Kino|Kinos|cine
+die|Post|-|correo
+die|Polizei|-|policía
+der|Markt|Märkte|mercado
+der|Laden|Läden|tienda
+die|Bäckerei|Bäckereien|panadería
+die|Ampel|Ampeln|semáforo
+die|Brücke|Brücken|puente
+die|Ecke|Ecken|esquina
+die|Kreuzung|Kreuzungen|cruce
+der|Weg|Wege|camino
+die|Richtung|Richtungen|dirección (sentido)
+der|Eingang|Eingänge|entrada
+der|Ausgang|Ausgänge|salida
+das|Gleis|Gleise|andén, vía
+die|Fahrkarte|Fahrkarten|pasaje
+die|Abfahrt|Abfahrten|salida (de un tren)
+die|Ankunft|Ankünfte|llegada
+der|Stadtplan|Stadtpläne|plano de la ciudad
+der|Parkplatz|Parkplätze|parqueadero
+die|Tankstelle|Tankstellen|estación de gasolina
+x|links||a la izquierda
+x|rechts||a la derecha
+x|geradeaus||derecho, todo recto
+`},
+
+{id:'a2-n100',lv:'A2',title:'Top 100 sustantivos',sub:'Opiniones, planes, naturaleza, sociedad',raw:`
+die|Meinung|Meinungen|opinión
+der|Grund|Gründe|razón, motivo
+die|Idee|Ideen|idea
+die|Erfahrung|Erfahrungen|experiencia
+die|Möglichkeit|Möglichkeiten|posibilidad
+die|Entscheidung|Entscheidungen|decisión
+der|Unterschied|Unterschiede|diferencia
+das|Ergebnis|Ergebnisse|resultado
+die|Situation|Situationen|situación
+das|Thema|Themen|tema
+die|Geschichte|Geschichten|historia, cuento
+die|Nachricht|Nachrichten|mensaje, noticia
+das|Gespräch|Gespräche|conversación
+die|Einladung|Einladungen|invitación
+der|Besuch|Besuche|visita
+die|Erinnerung|Erinnerungen|recuerdo
+der|Wunsch|Wünsche|deseo
+der|Plan|Pläne|plan
+das|Ziel|Ziele|meta, destino
+der|Anfang|Anfänge|comienzo
+das|Ende|Enden|final
+der|Teil|Teile|parte
+die|Art|Arten|tipo, manera
+die|Ordnung|-|orden
+die|Sicherheit|-|seguridad
+die|Gesundheit|-|salud
+die|Wirtschaft|-|economía
+die|Gesellschaft|Gesellschaften|sociedad
+die|Regierung|Regierungen|gobierno
+das|Gesetz|Gesetze|ley
+die|Zukunft|-|futuro
+die|Vergangenheit|-|pasado
+der|Verkehr|-|tráfico
+der|Unfall|Unfälle|accidente
+der|Lärm|-|ruido
+die|Umwelt|-|medio ambiente
+die|Natur|-|naturaleza
+das|Tier|Tiere|animal
+die|Pflanze|Pflanzen|planta
+das|Feuer|Feuer|fuego
+die|Luft|-|aire
+der|Berg|Berge|montaña
+der|See|Seen|lago
+das|Meer|Meere|mar
+der|Strand|Strände|playa
+der|Fluss|Flüsse|río
+der|Wald|Wälder|bosque
+die|Insel|Inseln|isla
+das|Ausland|-|extranjero
+die|Grenze|Grenzen|frontera
+die|Kultur|Kulturen|cultura
+die|Tradition|Traditionen|tradición
+die|Zeitschrift|Zeitschriften|revista
+das|Programm|Programme|programa
+das|Internet|-|internet
+die|Seite|Seiten|página, lado
+das|Passwort|Passwörter|contraseña
+die|Veranstaltung|Veranstaltungen|evento
+die|Prüfung|Prüfungen|examen
+die|Note|Noten|nota, calificación
+der|Kurs|Kurse|curso
+die|Aufgabe|Aufgaben|tarea, ejercicio
+die|Übung|Übungen|práctica, ejercicio
+die|Lösung|Lösungen|solución
+der|Satz|Sätze|oración
+der|Text|Texte|texto
+die|Grammatik|-|gramática
+die|Bedeutung|Bedeutungen|significado
+der|Inhalt|Inhalte|contenido
+die|Verbindung|Verbindungen|conexión
+der|Vorschlag|Vorschläge|propuesta
+der|Eindruck|Eindrücke|impresión
+der|Streit|Streite|pelea, discusión
+der|Mut|-|valor, coraje
+die|Angst|Ängste|miedo
+die|Liebe|-|amor
+das|Glück|-|suerte, felicidad
+die|Hoffnung|Hoffnungen|esperanza
+die|Sorge|Sorgen|preocupación
+die|Wahrheit|Wahrheiten|verdad
+die|Lüge|Lügen|mentira
+das|Recht|Rechte|derecho
+die|Pflicht|Pflichten|deber
+die|Freiheit|Freiheiten|libertad
+der|Frieden|-|paz
+der|Krieg|Kriege|guerra
+die|Gelegenheit|Gelegenheiten|oportunidad
+die|Mitte|-|centro, mitad
+die|Ahnung|Ahnungen|idea vaga, presentimiento
+`},
+{id:'a2-verbs',lv:'A2',title:'Top 50 verbos',sub:'Con formas: er/sie … · Präteritum · Perfekt',raw:`
+v|bekommen|bekommt · bekam · hat bekommen|recibir
+v|bringen|bringt · brachte · hat gebracht|traer, llevar
+v|denken|denkt · dachte · hat gedacht|pensar
+v|glauben|glaubt · glaubte · hat geglaubt|creer
+v|hoffen|hofft · hoffte · hat gehofft|esperar (tener esperanza)
+v|meinen|meint · meinte · hat gemeint|opinar, querer decir
+v|erklären|erklärt · erklärte · hat erklärt|explicar
+v|erzählen|erzählt · erzählte · hat erzählt|contar, narrar
+v|vergessen|vergisst · vergaß · hat vergessen|olvidar
+v|verlieren|verliert · verlor · hat verloren|perder
+v|gewinnen|gewinnt · gewann · hat gewonnen|ganar
+v|entscheiden|entscheidet · entschied · hat entschieden|decidir
+v|einladen|lädt ein · lud ein · hat eingeladen|invitar
+v|besuchen|besucht · besuchte · hat besucht|visitar
+v|bestellen|bestellt · bestellte · hat bestellt|pedir, ordenar
+v|reservieren|reserviert · reservierte · hat reserviert|reservar
+v|buchen|bucht · buchte · hat gebucht|reservar (viaje, hotel)
+v|abholen|holt ab · holte ab · hat abgeholt|recoger
+v|ankommen|kommt an · kam an · ist angekommen|llegar
+v|abfahren|fährt ab · fuhr ab · ist abgefahren|salir (un vehículo)
+v|umsteigen|steigt um · stieg um · ist umgestiegen|hacer transbordo
+v|mitnehmen|nimmt mit · nahm mit · hat mitgenommen|llevar consigo
+v|einkaufen|kauft ein · kaufte ein · hat eingekauft|hacer compras
+v|benutzen|benutzt · benutzte · hat benutzt|usar
+v|verbringen|verbringt · verbrachte · hat verbracht|pasar (tiempo)
+v|feiern|feiert · feierte · hat gefeiert|celebrar
+v|tanzen|tanzt · tanzte · hat getanzt|bailar
+v|kochen|kocht · kochte · hat gekocht|cocinar
+v|backen|bäckt · backte · hat gebacken|hornear
+v|putzen|putzt · putzte · hat geputzt|limpiar
+v|waschen|wäscht · wusch · hat gewaschen|lavar
+v|anziehen|zieht an · zog an · hat angezogen|vestir, ponerse
+v|wehtun|tut weh · tat weh · hat wehgetan|doler
+v|fehlen|fehlt · fehlte · hat gefehlt|faltar
+v|passen|passt · passte · hat gepasst|quedar bien, encajar
+v|gefallen|gefällt · gefiel · hat gefallen|gustar
+v|schmecken|schmeckt · schmeckte · hat geschmeckt|saber (a)
+v|ändern|ändert · änderte · hat geändert|cambiar
+v|verdienen|verdient · verdiente · hat verdient|ganar (dinero), merecer
+v|mieten|mietet · mietete · hat gemietet|alquilar (tomar)
+v|vermieten|vermietet · vermietete · hat vermietet|alquilar (dar)
+v|schicken|schickt · schickte · hat geschickt|enviar
+v|erlauben|erlaubt · erlaubte · hat erlaubt|permitir
+v|verbieten|verbietet · verbot · hat verboten|prohibir
+v|versuchen|versucht · versuchte · hat versucht|intentar
+v|vorschlagen|schlägt vor · schlug vor · hat vorgeschlagen|proponer
+v|teilnehmen|nimmt teil · nahm teil · hat teilgenommen|participar
+v|passieren|passiert · passierte · ist passiert|suceder
+v|vorbereiten|bereitet vor · bereitete vor · hat vorbereitet|preparar
+v|gehören|gehört · gehörte · hat gehört|pertenecer
+v|reparieren|repariert · reparierte · hat repariert|reparar
+v|kennenlernen|lernt kennen · lernte kennen · hat kennengelernt|conocer (a alguien)
+`},
+{id:'a2-adj',lv:'A2',title:'Adjetivos y adverbios',sub:'Matices, conectores y tiempo',raw:`
+a|bereit||listo, dispuesto
+a|sicher||seguro
+a|gefährlich||peligroso
+a|möglich||posible
+a|unmöglich||imposible
+a|normal||normal
+a|besonders||especial, sobre todo
+a|ruhig||tranquilo
+a|laut||ruidoso, fuerte
+a|leise||silencioso, bajito
+a|sauber||limpio
+a|schmutzig||sucio
+a|frei||libre
+a|besetzt||ocupado
+a|offen||abierto
+a|geschlossen||cerrado
+a|voll||lleno
+a|leer||vacío
+a|hungrig||hambriento
+a|durstig||sediento
+a|pünktlich||puntual
+a|spät||tarde
+a|früh||temprano
+a|bequem||cómodo
+a|praktisch||práctico
+a|ähnlich||parecido
+a|verschieden||diferente, distinto
+a|gleich||igual
+a|einfach||sencillo, simplemente
+a|schwierig||difícil
+a|nützlich||útil
+a|gemütlich||acogedor
+a|beliebt||popular, querido
+a|bekannt||conocido
+a|berühmt||famoso
+a|verheiratet||casado
+a|ledig||soltero
+a|arbeitslos||desempleado
+a|zufrieden||satisfecho
+x|plötzlich||de repente
+x|wirklich||realmente
+x|eigentlich||en realidad
+x|ziemlich||bastante
+x|fast||casi
+x|genug||suficiente
+x|zu||demasiado, a
+x|ganz||completamente, entero
+x|leider||lastimosamente
+x|außerdem||además
+x|deshalb||por eso
+x|trotzdem||aun así
+x|obwohl||aunque
+x|bereits||ya (formal)
+x|endlich||por fin
+x|früher||antes, antiguamente
+x|später||más tarde
+x|selten||raramente
+x|meistens||casi siempre
+x|überall||en todas partes
+x|draußen||afuera
+x|drinnen||adentro
+`},
+{id:'a2-body',lv:'A2',title:'Cuerpo y salud',sub:'Partes del cuerpo y visita al médico',raw:`
+der|Körper|Körper|cuerpo
+der|Arm|Arme|brazo
+das|Bein|Beine|pierna
+der|Fuß|Füße|pie
+der|Finger|Finger|dedo
+der|Rücken|Rücken|espalda
+der|Bauch|Bäuche|barriga, estómago
+der|Hals|Hälse|cuello, garganta
+die|Nase|Nasen|nariz
+der|Mund|Münder|boca
+das|Ohr|Ohren|oreja, oído
+der|Zahn|Zähne|diente
+das|Gesicht|Gesichter|cara
+das|Haar|Haare|cabello
+das|Herz|Herzen|corazón
+die|Haut|-|piel
+das|Fieber|-|fiebre
+der|Husten|-|tos
+die|Erkältung|Erkältungen|resfriado
+die|Grippe|-|gripa
+die|Kopfschmerzen|Kopfschmerzen|dolor de cabeza (pl.)
+die|Schmerzen|Schmerzen|dolores (pl.)
+die|Tablette|Tabletten|pastilla
+das|Medikament|Medikamente|medicamento
+das|Rezept|Rezepte|receta, fórmula
+die|Praxis|Praxen|consultorio
+die|Allergie|Allergien|alergia
+der|Notfall|Notfälle|emergencia
+der|Krankenwagen|Krankenwagen|ambulancia
+die|Krankheit|Krankheiten|enfermedad
+die|Versicherung|Versicherungen|seguro
+der|Zahnarzt|Zahnärzte|dentista
+`},
+{id:'a2-work',lv:'A2',title:'Trabajo y estudio',sub:'Oficina, solicitudes y formación',raw:`
+der|Beruf|Berufe|profesión
+die|Firma|Firmen|empresa
+das|Büro|Büros|oficina
+die|Besprechung|Besprechungen|reunión
+die|Bewerbung|Bewerbungen|postulación
+der|Lebenslauf|Lebensläufe|hoja de vida
+das|Gehalt|Gehälter|salario
+der|Vertrag|Verträge|contrato
+die|Stelle|Stellen|puesto, vacante
+das|Praktikum|Praktika|práctica, pasantía
+die|Ausbildung|Ausbildungen|formación profesional
+das|Studium|Studien|estudios universitarios
+die|Universität|Universitäten|universidad
+die|Klasse|Klassen|clase, curso
+der|Unterricht|-|clase, enseñanza
+die|Hausaufgabe|Hausaufgaben|tarea (para la casa)
+die|Bibliothek|Bibliotheken|biblioteca
+der|Ausweis|Ausweise|documento de identidad
+das|Formular|Formulare|formulario
+die|Unterschrift|Unterschriften|firma (de una persona)
+der|Feierabend|-|fin de la jornada
+die|Überstunden|Überstunden|horas extra (pl.)
+der|Arbeitsplatz|Arbeitsplätze|lugar de trabajo
+der|Ingenieur|Ingenieure|ingeniero
+der|Mechaniker|Mechaniker|mecánico
+der|Elektriker|Elektriker|electricista
+die|Baustelle|Baustellen|obra
+das|Werkzeug|Werkzeuge|herramienta
+`},
+{id:'a2-travel',lv:'A2',title:'Viajes y ocio',sub:'Aeropuerto, hotel, eventos y tiempo libre',raw:`
+das|Gepäck|-|equipaje
+der|Pass|Pässe|pasaporte
+das|Visum|Visa|visa
+die|Reservierung|Reservierungen|reserva
+die|Übernachtung|Übernachtungen|noche de alojamiento
+die|Unterkunft|Unterkünfte|alojamiento
+der|Reiseführer|Reiseführer|guía de viaje
+die|Sehenswürdigkeit|Sehenswürdigkeiten|atracción turística
+der|Ausflug|Ausflüge|excursión
+die|Wanderung|Wanderungen|caminata
+die|Landkarte|Landkarten|mapa
+der|Flug|Flüge|vuelo
+die|Verspätung|Verspätungen|retraso
+der|Zoll|-|aduana
+die|Kreditkarte|Kreditkarten|tarjeta de crédito
+das|Bargeld|-|efectivo
+der|Geldautomat|Geldautomaten|cajero automático
+die|Sonnencreme|Sonnencremes|bloqueador solar
+das|Konzert|Konzerte|concierto
+die|Ausstellung|Ausstellungen|exposición
+das|Theater|Theater|teatro
+der|Eintritt|-|entrada (precio)
+die|Eintrittskarte|Eintrittskarten|boleta de entrada
+das|Hobby|Hobbys|pasatiempo
+das|Abenteuer|Abenteuer|aventura
+das|Wochenende|Wochenenden|fin de semana
+die|Freizeit|-|tiempo libre
+`},
+{id:'a2-clothes',lv:'A2',title:'Ropa y compras',sub:'Probarse, pagar, cambiar',raw:`
+die|Kleidung|-|ropa
+das|Hemd|Hemden|camisa
+die|Hose|Hosen|pantalón
+der|Rock|Röcke|falda
+das|Kleid|Kleider|vestido
+die|Jacke|Jacken|chaqueta
+der|Mantel|Mäntel|abrigo
+der|Pullover|Pullover|suéter
+das|T-Shirt|T-Shirts|camiseta
+der|Schuh|Schuhe|zapato
+die|Socke|Socken|media, calcetín
+die|Mütze|Mützen|gorro
+der|Gürtel|Gürtel|cinturón
+der|Schal|Schals|bufanda
+die|Größe|Größen|talla, tamaño
+die|Farbe|Farben|color
+das|Angebot|Angebote|oferta
+der|Rabatt|Rabatte|descuento
+die|Kasse|Kassen|caja
+der|Kassenzettel|Kassenzettel|recibo de compra
+das|Geschäft|Geschäfte|negocio, tienda
+das|Kaufhaus|Kaufhäuser|almacén grande
+die|Tüte|Tüten|bolsa
+das|Geschenk|Geschenke|regalo
+der|Umtausch|-|cambio (devolución)
+`}
+];
+
+/* ---------- Utilidades ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+D.forEach(d => {
+  d.words = d.raw.trim().split('\n').map(l => {
+    const [t, de, x, es] = l.split('|').map(s => s.trim());
+    const noun = ['der', 'die', 'das'].includes(t);
+    return { k: d.id + ':' + de, t: noun ? 'n' : t, art: noun ? t : '', de, x: x === '-' ? '' : x, es, plOnly: false };
+  });
+});
+
+let prog = lsGet('dk-prog', {});         // clave -> caja 0..4
+let state = lsGet('dk-ui', { lv: 'A1', dir: 'es-de' });
+const box = w => prog[w.k] || 0;
+const MASTER = 3;
+
+/* ---------- Pronunciación (Wiktionary → Wikimedia Commons) ---------- */
+const audMem = new Map();
+function pickAudio(files, word) {
+  const au = files.filter(f => /\.(ogg|oga|opus|mp3|wav|flac)$/i.test(f) && /^(De-|LL-Q188 \(deu\))/i.test(f));
+  const w = word.toLowerCase();
+  const own = au.filter(f => f.toLowerCase().includes(w));
+  const pool = own.length ? own : [];
+  return pool.find(f => /^De-/i.test(f) && !/^De-(at|ch)-/i.test(f)) || pool.find(f => /^LL-Q188/i.test(f)) || pool[0] || null;
+}
+function findAudio(word) {
+  if (/\s/.test(word)) return Promise.resolve(null);
+  const cached = lsGet('aud:' + word, undefined);
+  if (cached !== undefined) return Promise.resolve(cached === 0 ? null : cached);
+  if (audMem.has(word)) return audMem.get(word);
+  const p = (async () => {
+    let reached = false;
+    for (const host of ['de.wiktionary.org', 'en.wiktionary.org']) {
+      try {
+        const r = await fetch('https://' + host + '/w/api.php?action=query&titles=' + encodeURIComponent(word) + '&prop=images&imlimit=100&format=json&origin=*');
+        const j = await r.json();
+        reached = true;
+        const files = [];
+        Object.values((j.query && j.query.pages) || {}).forEach(pg => (pg.images || []).forEach(i => files.push(i.title.replace(/^[^:]+:/, ''))));
+        const f = pickAudio(files, word);
+        if (f) {
+          const url = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(f.replace(/ /g, '_'));
+          lsSet('aud:' + word, url);
+          return url;
+        }
+      } catch (e) { /* sin red o bloqueado: no se guarda como “sin audio” */ }
+    }
+    if (reached) lsSet('aud:' + word, 0);
+    return null;
+  })();
+  audMem.set(word, p);
+  return p;
+}
+function audioBtn(word) {
+  return '<button class="snd" data-w="' + esc(word) + '" hidden aria-label="Escuchar ' + esc(word) + '">🔊 Escuchar</button>';
+}
+function wireAudio() {
+  document.querySelectorAll('.snd[data-w]').forEach(b => {
+    const w = b.dataset.w;
+    findAudio(w).then(u => {
+      if (!u || !document.body.contains(b)) return;
+      b.hidden = false;
+      b.onclick = () => {
+        const a = new Audio(u);
+        b.classList.add('on');
+        a.onended = a.onerror = () => b.classList.remove('on');
+        a.play().catch(() => b.classList.remove('on'));
+      };
+    });
+  });
+}
+const prefetch = w => { if (w) findAudio(w.de); };
+
+
+/* ---------- Reglas de género ---------- */
+const LEVELS = { sure: ['Fiable', 3], strong: ['Fuerte', 2], tend: ['Tendencia', 1] };
+const SUF = (e, g, l, eg, ex, t, o) => Object.assign({ k: 'suf', e, g, l, eg, ex, t }, o || {});
+const PRE = (e, g, l, eg, ex, t, o) => Object.assign({ k: 'pre', e, g, l, eg, ex, t }, o || {});
+const L = (e, g, l, words, eg, t) => ({ k: 'list', e, g, l, words, eg, ex: [], t });
+const RULES = [
+SUF('ung','die','sure',['Zeitung','Wohnung','Übung'],['Sprung','Schwung'],'Viene de un verbo (wohnen → Wohnung). Sprung y Schwung solo lo parecen.'),
+SUF('heit','die','sure',['Freiheit','Gesundheit','Schönheit'],[],'Convierte un adjetivo en sustantivo abstracto (frei → Freiheit).'),
+SUF('keit','die','sure',['Möglichkeit','Schwierigkeit','Sauberkeit'],[],'Igual que -heit; se usa tras -bar, -ig, -lich, -sam.'),
+SUF('schaft','die','sure',['Freundschaft','Wissenschaft','Gesellschaft'],[],'Grupos, estados y relaciones.'),
+SUF('tion','die','sure',['Information','Nation','Situation'],[],'Sustantivos abstractos de origen latino.'),
+SUF('sion','die','sure',['Diskussion','Version','Television'],[],'Abstractos de origen latino, como -tion.'),
+SUF('ion','die','strong',['Million','Region','Religion'],['Stadion','Skorpion','Champion','Pavillon'],'Casi siempre femenino; unas pocas palabras extranjeras se escapan.'),
+SUF('tät','die','sure',['Universität','Qualität','Realität'],[],'Abstractos del latín -tas, como -dad en español (calidad → Qualität).'),
+SUF('ik','die','strong',['Musik','Politik','Technik'],['Mosaik','Katholik'],'Materias y campos (como -ica en español).'),
+SUF('ur','die','strong',['Kultur','Natur','Tastatur'],['Abitur','Futur','Flur'],'Sobre todo latinas. Unos pocos neutros y Flur (pasillo) son distintos.'),
+SUF('ei','die','strong',['Bäckerei','Polizei','Metzgerei'],['Ei','Blei','Brei','Papagei'],'Tiendas, lugares de trabajo y actividades continuas.'),
+SUF('ie','die','strong',['Familie','Energie','Fotografie'],['Genie','Hippie','Junkie','Zombie'],'Sobre todo préstamos del latín o griego. Las excepciones suelen ser personas.'),
+SUF('in','die','strong',['Lehrerin','Freundin','Ärztin'],['Termin','Benzin','Kamin','Magazin','Vitamin'],'Forma femenina de persona o animal (Lehrer → Lehrerin). Préstamos como Termin y Benzin no la siguen.',{no:'ein$'}),
+SUF('ine','die','strong',['Maschine','Praline','Kabine'],[],'Sobre todo préstamos del francés.'),
+SUF('age','die','strong',['Garage','Reportage','Massage'],[],'Préstamos del francés.'),
+SUF('anz','die','strong',['Toleranz','Distanz','Eleganz'],['Tanz','Kranz','Glanz','Schwanz'],'Abstractos latinos. Cuatro palabras nativas cortas son masculinas.'),
+SUF('enz','die','strong',['Konferenz','Präsenz','Existenz'],['Lenz'],'Abstractos latinos.'),
+SUF('ade','die','strong',['Limonade','Schokolade','Fassade'],[],'Préstamos del francés.'),
+SUF('ette','die','strong',['Zigarette','Toilette','Kassette'],['Raclette'],'Diminutivo francés.'),
+SUF('e','die','strong',['Lampe','Katze','Straße','Blume'],['Name','Käse','Junge','Kollege','Neffe','Löwe','Hase','Affe','Ende','Auge','Interesse','Erbe'],'La mayoría de los sustantivos en -e son femeninos. Los masculinos suelen ser personas y animales (der Junge, der Löwe); los neutros son pocos (das Ende, das Auge).',{no:'ee$'}),
+SUF('a','die','tend',['Kamera','Pizza','Villa'],['Sofa','Opa','Papa','Panda','Koala'],'Muchos préstamos en -a son femeninos. Las palabras griegas en -ma son neutras, ver -ma.'),
+SUF('ismus','der','sure',['Tourismus','Realismus','Journalismus'],[],'Movimientos y doctrinas (como -ismo).'),
+SUF('ling','der','sure',['Frühling','Lehrling','Liebling'],['Reling'],'Personas y cosas definidas por un rasgo.'),
+SUF('ig','der','strong',['Honig','König','Essig','Käfig'],[],'Masculinos, con muy pocas excepciones.'),
+SUF('or','der','strong',['Motor','Doktor','Autor','Humor'],['Tor','Labor','Moor'],'Agentes y máquinas de origen latino.'),
+SUF('ist','der','strong',['Journalist','Tourist','Polizist'],['Frist','List'],'Personas con una profesión o una creencia.'),
+SUF('eur','der','sure',['Friseur','Ingenieur','Masseur'],[],'Agentes franceses, personas.'),
+SUF('är','der','strong',['Sekretär','Millionär','Aktionär'],['Militär'],'Personas, del francés -aire.'),
+SUF('ant','der','strong',['Praktikant','Elefant','Diamant'],['Restaurant'],'Sobre todo personas y animales.'),
+SUF('ent','der','strong',['Student','Präsident','Assistent'],['Patent','Talent','Prozent','Event'],'Sobre todo personas. Las cosas en -ent suelen ser neutras.'),
+SUF('us','der','strong',['Bus','Zirkus','Kaktus','Rhythmus'],['Virus','Genus','Plus','Minus'],'Préstamos latinos.',{no:'aus$'}),
+SUF('er','der','tend',['Computer','Lehrer','Fahrer','Hammer'],['Mutter','Schwester','Tochter','Butter','Leiter','Feder','Fenster','Zimmer','Wasser','Messer','Wetter','Fieber','Ufer','Wunder','Bier'],'Quien hace algo y las herramientas son masculinos. El parentesco (Mutter, Schwester) es femenino y muchos objetos son neutros.'),
+SUF('en','der','tend',['Garten','Boden','Wagen','Kuchen'],['Becken','Kissen','Zeichen','Wappen','Leben','Essen'],'Masculino en la mayoría. Los verbos usados como sustantivo son neutros (essen → das Essen).'),
+SUF('chen','das','sure',['Mädchen','Brötchen','Häuschen'],[],'Diminutivo. Siempre neutro, incluso para personas (das Mädchen).'),
+SUF('lein','das','sure',['Fräulein','Büchlein','Männlein'],[],'Diminutivo, como -chen.'),
+SUF('ment','das','strong',['Dokument','Instrument','Element','Parlament'],['Zement','Moment'],'Préstamos latinos para cosas.'),
+SUF('tum','das','strong',['Eigentum','Wachstum','Christentum'],['Irrtum','Reichtum'],'Neutro salvo dos masculinos.'),
+SUF('um','das','strong',['Museum','Zentrum','Datum','Studium'],[],'Sustantivos neutros latinos.'),
+SUF('ma','das','strong',['Thema','Drama','Klima','Komma'],['Mama','Firma'],'Préstamos griegos.'),
+SUF('o','das','tend',['Auto','Foto','Kino','Büro','Video'],['Euro','Zoo','Cappuccino','Espresso','Tango'],'Muchos préstamos en -o son neutros, pero varias bebidas y bailes son masculinos.'),
+SUF('ett','das','strong',['Bett','Ballett','Brett'],[],'Neutro casi siempre.'),
+SUF('nis','das','tend',['Ergebnis','Ereignis','Zeugnis','Geheimnis'],['Kenntnis','Erlaubnis','Wildnis','Erkenntnis'],'Neutro más veces que no, pero bastantes son femeninos.'),
+SUF('al','das','tend',['Material','Ideal','Signal','Kapital'],['Kanal','Saal','Wal','Skandal','Qual'],'Neutro en muchos préstamos. Varias palabras cortas son masculinas.'),
+SUF('ing','das','tend',['Meeting','Training','Marketing','Shopping'],['Hering','Schilling'],'Los anglicismos son neutros.',{min:6}),
+PRE('ge','das','tend',['Gebäude','Gemüse','Gebirge','Gespräch'],['Gedanke','Gesang','Gewinn','Gebrauch','Geruch','Geschmack','Gegner','Geburt','Gefahr','Geschichte','Gegend','Gemeinde'],'Los colectivos con Ge- son neutros. Muchos abstractos con Ge- son masculinos o femeninos.',{min:5}),
+L('Días, meses y estaciones','der','sure',['montag','dienstag','mittwoch','donnerstag','freitag','samstag','sonnabend','sonntag','januar','februar','märz','april','mai','juni','juli','august','september','oktober','november','dezember','frühling','sommer','herbst','winter','morgen','mittag','abend'],['Montag','Juli','Sommer'],'Siempre masculinos. La excepción es die Nacht.'),
+L('Clima y puntos cardinales','der','strong',['regen','schnee','wind','nebel','sturm','hagel','norden','süden','osten','westen'],['Regen','Wind','Norden'],'La mayoría de las palabras del clima son masculinas. Das Wetter, das Eis y das Gewitter no.'),
+L('Metales','das','strong',['gold','silber','eisen','kupfer','zinn','blei','platin','messing'],['Gold','Silber','Eisen'],'Los metales son neutros. Der Stahl y der Zink son las excepciones principales.'),
+L('Colores como sustantivo','das','sure',['rot','blau','gelb','grün','schwarz','weiß','grau','braun','lila'],['Blau','Rot','Grün'],'Un color usado como sustantivo es neutro (das Blau des Himmels).'),
+L('Idiomas','das','sure',['deutsch','englisch','spanisch','französisch','italienisch','portugiesisch'],['Deutsch','Englisch','Spanisch'],'Los nombres de idiomas son neutros (das Deutsch).')
+];
+RULES.forEach(r => { r.exL = new Set((r.ex || []).map(x => x.toLowerCase())); });
+const endLabel = r => r.k === 'suf' ? '-' + r.e : r.k === 'pre' ? r.e.charAt(0).toUpperCase() + r.e.slice(1) + '-' : r.e;
+function matchRules(word) {
+  const parts = String(word).trim().split(/\s+/);
+  const w = parts[parts.length - 1].toLowerCase();
+  const hits = [];
+  for (const r of RULES) {
+    let spec = 0;
+    if (r.k === 'list') { if (r.words.includes(w)) spec = 99; }
+    else if (r.k === 'suf') { const min = r.min || r.e.length + 1; if (w.length >= min && w.endsWith(r.e) && !(r.no && new RegExp(r.no).test(w))) spec = r.e.length; }
+    else { const min = r.min || r.e.length + 3; if (w.length >= min && w.startsWith(r.e)) spec = r.e.length + 0.5; }
+    if (spec) hits.push({ r, spec });
+  }
+  hits.sort((a, b) => b.spec - a.spec);
+  return hits.map(h => h.r);
+}
+function ruleBody(r, extra) {
+  const eg = r.eg.length ? '<p class="meta"><b>Ejemplos</b>' + r.eg.map(x => esc(r.g + ' ' + x)).join(' · ') + '</p>' : '';
+  const ex = r.ex.length ? '<p class="meta"><b>Excepciones</b>' + r.ex.slice(0, 12).map(esc).join(', ') + (r.ex.length > 12 ? ' …' : '') + '</p>' : '';
+  return '<div class="rule-head"><code class="end">' + esc(endLabel(r)) + '</code><span class="pill ' + r.g + '">' + r.g + '</span><span class="tier">' + LEVELS[r.l][0] + '</span></div>' +
+    (extra || '') + '<p>' + esc(r.t) + '</p>' + eg + ex;
+}
+function ruleBlock(w) {
+  const hits = matchRules(w.de);
+  if (!hits.length) return '<section class="rule"><p><b>Ninguna regla de terminación aplica.</b> Esta hay que memorizarla. Aprende la palabra con su artículo: <b>' + esc(w.art + ' ' + w.de) + '</b>.</p></section>';
+  const p = hits[0];
+  let st;
+  if (w.art === p.g) st = '<p class="status ok">Esta palabra sigue la regla.</p>';
+  else if (p.exL.has(w.de.toLowerCase())) st = '<p class="status bad">Es una excepción conocida. Memorízala como excepción.</p>';
+  else st = '<p class="status bad">Esta palabra rompe el patrón. ' + (p.l === 'tend' ? 'Pasa con las tendencias.' : 'Agrégala a tus excepciones.') + '</p>';
+  return '<section class="rule g-' + p.g + '">' + ruleBody(p, st) + '</section>';
+}
+let ruleFilter = '';
+function rulesHtml() {
+  return '<p class="lede">Terminaciones y grupos que predicen el artículo. Las fiables casi no tienen excepciones; las tendencias aciertan más veces que no. Cada regla lista sus excepciones.</p>' +
+    '<input class="chk" id="chk" type="text" placeholder="Prueba una palabra: Wohnung" autocomplete="off" spellcheck="false" autocapitalize="off">' +
+    '<div class="chk-out" id="chk-out" aria-live="polite"></div>' +
+    '<div class="seg" id="rf" style="justify-content:flex-start;margin-bottom:12px">' + ['', 'der', 'die', 'das'].map(f => '<button data-f="' + f + '" aria-pressed="' + (ruleFilter === f) + '">' + (f || 'Todas') + '</button>').join('') + '</div>' +
+    '<div id="rule-list">' + ruleListHtml() + '</div>';
+}
+const ruleListHtml = () => RULES.filter(r => !ruleFilter || r.g === ruleFilter).map(r => '<section class="rule g-' + r.g + '">' + ruleBody(r) + '</section>').join('');
+function bindRules() {
+  $('#chk').oninput = e => {
+    const v = e.target.value.trim(), out = $('#chk-out');
+    if (!v) { out.innerHTML = ''; return; }
+    const h = matchRules(v);
+    if (!h.length) { out.innerHTML = '<p>Ninguna regla aplica a <b>' + esc(v) + '</b>. Hay que aprenderla de memoria.</p>'; return; }
+    const p = h[0];
+    out.innerHTML = '<p>Mi mejor apuesta para <b>' + esc(v) + '</b>: <span class="t-' + p.g + '">' + p.g + '</span> por <code>' + esc(endLabel(p)) + '</code> (' + LEVELS[p.l][0].toLowerCase() + ').' +
+      (h[1] && h[1].g !== p.g ? ' También coincide con <code>' + esc(endLabel(h[1])) + '</code>, que apunta a ' + h[1].g + '.' : '') + '</p>';
+  };
+  app.querySelectorAll('#rf button').forEach(b => b.onclick = () => {
+    ruleFilter = b.dataset.f;
+    app.querySelectorAll('#rf button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    $('#rule-list').innerHTML = ruleListHtml();
+  });
+}
+function bindTabs() { app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.lv = b.dataset.lv; lsSet('dk-ui', state); home(); }); }
+
+/* ---------- Pantallas ---------- */
+const app = $('#app');
+let S = null; // sesión
+
+function home() {
+  S = null;
+  const lvls = [['A1', 'A1'], ['A2', 'A2'], ['R', 'Reglas']];
+  let h = '<div class="top"><h1>Easy Vokab Trainer</h1></div>';
+  h += '<div class="tabs">' + lvls.map(l => '<button class="tab" data-lv="' + l[0] + '" aria-pressed="' + (state.lv === l[0]) + '">' + l[1] + '</button>').join('') + '</div>';
+  if (state.lv === 'R') { app.innerHTML = h + rulesHtml(); bindTabs(); bindRules(); return; }
+  D.filter(d => d.lv === state.lv).forEach(d => {
+    const m = d.words.filter(w => box(w) >= MASTER).length;
+    const nouns = d.words.filter(w => w.t === 'n').length;
+    h += '<section class="deck"><h2>' + esc(d.title) + '</h2><p>' + esc(d.sub) + ' · ' + d.words.length + ' palabras</p>' +
+      '<div class="bar"><i style="width:' + Math.round(100 * m / d.words.length) + '%"></i></div>' +
+      '<div class="row"><button class="btn pri" data-go="cards" data-id="' + d.id + '">Tarjetas · ' + m + '/' + d.words.length + '</button>' +
+      '<button class="btn" data-go="art" data-id="' + d.id + '"' + (nouns < 8 ? ' disabled' : '') + '>der · die · das</button></div></section>';
+  });
+  h += '<div class="foot">Audio: se busca en Wiktionary / Wikimedia Commons al mostrar cada palabra; el botón aparece solo si existe una grabación. Vocabulario seleccionado por frecuencia y tema, no es copia de la lista oficial del Goethe-Institut. ' +
+    '<br><button class="ghost" id="exp" style="margin-top:10px">Copiar decks como JSON</button></div>';
+  app.innerHTML = h;
+  bindTabs();
+  app.querySelectorAll('[data-go]').forEach(b => b.onclick = () => start(b.dataset.id, b.dataset.go));
+  $('#exp').onclick = async e => {
+    const out = D.map(d => ({ id: d.id, level: d.lv, title: d.title, words: d.words.map(w => ({ de: w.de, article: w.art || undefined, type: w.t, extra: w.x || undefined, es: w.es })) }));
+    try { await navigator.clipboard.writeText(JSON.stringify(out, null, 1)); e.target.textContent = 'Copiado'; }
+    catch (err) { e.target.textContent = 'No se pudo copiar'; }
+  };
+}
+
+function start(id, mode) {
+  const d = D.find(x => x.id === id);
+  let pool = d.words.filter(w => mode === 'art' ? w.t === 'n' : true);
+  pool = shuffle(pool.slice()).sort((a, b) => box(a) - box(b));
+  const q = shuffle(pool.slice(0, 20));
+  S = { d, mode, q, i: 0, shown: false, right: 0, wrong: 0, again: new Set(), answered: false };
+  mode === 'art' ? renderArt() : renderCard();
+}
+
+function head() {
+  return '<div class="top"><button class="ghost" id="back" aria-label="Volver">←</button><h1>' + esc(S.d.title) + '</h1><span class="prog">' + Math.min(S.i + 1, S.q.length) + '/' + S.q.length + '</span></div>';
+}
+function bindBack() { $('#back').onclick = home; }
+function finish() {
+  app.innerHTML = '<div class="top"><button class="ghost" id="back">←</button><h1>' + esc(S.d.title) + '</h1></div>' +
+    '<div class="done"><h2>Sesión lista</h2><p class="prog">' + S.right + ' acertadas · ' + S.wrong + ' para repasar</p>' +
+    '<div class="row" style="margin-top:18px"><button class="btn pri" id="again">Otra sesión</button><button class="btn" id="hm">Ver decks</button></div></div>';
+  $('#back').onclick = $('#hm').onclick = home;
+  $('#again').onclick = () => start(S.d.id, S.mode);
+}
+function grade(w, ok) {
+  prog[w.k] = ok ? Math.min(4, box(w) + 1) : 0;
+  lsSet('dk-prog', prog);
+  if (ok) S.right++; else { S.wrong++; if (!S.again.has(w.k)) { S.again.add(w.k); S.q.push(w); } }
+}
+
+/* Tarjetas */
+function german(w) {
+  const a = w.art ? '<span class="art ' + w.art + '">' + w.art + '</span> ' : '';
+  return a + esc(w.de);
+}
+function renderCard() {
+  if (S.i >= S.q.length) return finish();
+  const w = S.q[S.i], dir = state.dir, front = dir === 'es-de';
+  let c;
+  if (!S.shown) {
+    c = front
+      ? '<div class="tag">Español</div><div class="de" style="font-size:2rem">' + esc(w.es) + '</div><div class="sub">' + (w.t === 'n' ? 'sustantivo' : w.t === 'v' ? 'verbo' : w.t === 'a' ? 'adjetivo' : 'palabra') + '</div>'
+      : '<div class="tag">Alemán</div><div class="de">' + esc(w.de) + '</div>' + audioBtn(w.de);
+  } else {
+    c = '<div class="de">' + german(w) + '</div>' +
+      (w.t === 'n' && w.x ? '<div class="sub">Plural: die ' + esc(w.x) + '</div>' : '') +
+      (w.t === 'v' && w.x ? '<div class="sub">' + esc(w.x) + '</div>' : '') +
+      '<div class="es">' + esc(w.es) + '</div>' + audioBtn(w.de);
+  }
+  app.innerHTML = head() +
+    '<div class="seg"><button data-d="es-de" aria-pressed="' + (dir === 'es-de') + '">ES → DE</button><button data-d="de-es" aria-pressed="' + (dir === 'de-es') + '">DE → ES</button></div>' +
+    '<div class="card" id="card">' + c + '</div>' +
+    (S.shown
+      ? '<div class="row"><button class="btn" id="no">Repasar</button><button class="btn pri" id="yes">Lo sé</button></div>'
+      : '<div class="row"><button class="btn pri" id="flip">Mostrar respuesta</button></div>');
+  bindBack();
+  app.querySelectorAll('.seg button').forEach(b => b.onclick = () => { state.dir = b.dataset.d; lsSet('dk-ui', state); S.shown = false; renderCard(); });
+  if (!S.shown) {
+    $('#flip').onclick = () => { S.shown = true; renderCard(); };
+    $('#card').onclick = e => { if (!e.target.closest('.snd')) { S.shown = true; renderCard(); } };
+  } else {
+    $('#yes').onclick = () => { grade(w, true); S.i++; S.shown = false; renderCard(); };
+    $('#no').onclick = () => { grade(w, false); S.i++; S.shown = false; renderCard(); };
+  }
+  wireAudio(); prefetch(S.q[S.i + 1]);
+}
+
+/* der · die · das */
+function renderArt() {
+  if (S.i >= S.q.length) return finish();
+  const w = S.q[S.i];
+  const a = S.answered;
+  const btns = ['der', 'die', 'das'].map(x => '<button class="art-btn ' + x + (a ? (x === w.art ? ' right' : ' wrong') : '') + '" data-a="' + x + '"' + (a ? ' disabled' : '') + '><span>' + x + '</span></button>').join('');
+  app.innerHTML = head() +
+    '<div class="card"><div class="tag">¿Qué artículo?</div><div class="de">' + (a ? german(w) : esc(w.de)) + '</div>' +
+    (w.x ? '<div class="sub">Plural: die ' + esc(w.x) + '</div>' : '') +
+    '<div class="es">' + esc(w.es) + '</div>' + audioBtn(w.de) +
+    '<div class="fb ' + (a ? (S.lastOk ? 'ok' : 'no') : '') + '">' + (a ? (S.lastOk ? 'Correcto' : 'Era ' + w.art + ' ' + esc(w.de)) : '') + '</div></div>' +
+    '<div class="three">' + btns + '</div>' +
+    (a ? '<div class="row" style="margin:14px 0"><button class="btn pri" id="next">Siguiente</button></div>' + ruleBlock(w) : '');
+  bindBack();
+  if (!a) app.querySelectorAll('.art-btn').forEach(b => b.onclick = () => {
+    S.lastOk = b.dataset.a === w.art; grade(w, S.lastOk); S.answered = true; renderArt();
+  });
+  else $('#next').onclick = () => { S.i++; S.answered = false; renderArt(); };
+  wireAudio(); prefetch(S.q[S.i + 1]);
+}
+
+home();
+</script>
+</body>
+</html>
