@@ -84,6 +84,7 @@ h1,h2,h3,p{margin:0}
 /* Top app bar */
 .md-top{position:sticky;top:0;z-index:5;background:var(--md-surface);color:var(--md-on-surface);padding-top:env(safe-area-inset-top,0px)}
 .md-top-in{display:flex;align-items:center;gap:4px;height:64px;padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.md-top-in.has-action{padding-right:max(4px,env(safe-area-inset-right,0px))}
 .md-top-in.pad-start{padding-left:max(16px,env(safe-area-inset-left,0px))}
 .md-top h1{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:400 22px/28px var(--md-font);letter-spacing:0}
 

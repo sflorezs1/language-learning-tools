@@ -55,9 +55,10 @@
 <body>
 
 <header class="md-top">
-  <div class="md-top-in">
+  <div class="md-top-in has-action">
     <a class="md-icon-btn" id="up" href="../" aria-label="Todas las herramientas"><span class="md-icon" aria-hidden="true">arrow_back</span></a>
     <h1 id="title">Easy Vokab Trainer</h1>
+    <a class="md-icon-btn" href="../atribuciones/" aria-label="Atribuciones" title="Atribuciones"><span class="md-icon" aria-hidden="true">info</span></a>
   </div>
 </header>
 
@@ -873,6 +874,14 @@ function wireAudio() {
     findAudio(w).then(u => {
       if (!u || !document.body.contains(b)) return;
       b.hidden = false;
+      if (!b.nextElementSibling || !b.nextElementSibling.classList.contains('snd-credit')) {
+        const a = document.createElement('a');
+        a.className = 'md-btn text snd-credit';
+        a.href = u.replace('Special:FilePath/', 'File:');
+        a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = 'Autor y licencia';
+        b.after(a);
+      }
       b.onclick = () => {
         const a = new Audio(u);
         b.classList.add('playing');
@@ -1040,7 +1049,8 @@ function home() {
       '<button class="md-btn tonal has-icon" data-go="art" data-id="' + d.id + '"' + (nouns < 8 ? ' disabled' : '') + '><span class="md-icon" aria-hidden="true">rule</span>der · die · das</button></div></section>';
   });
   h += '</div><div class="note"><p class="t-body-s muted">Audio: se busca en Wiktionary y Wikimedia Commons al mostrar cada palabra; el botón aparece solo si existe una grabación. Vocabulario seleccionado por frecuencia y tema, no es copia de la lista oficial del Goethe-Institut.</p>' +
-    '<button class="md-btn text has-icon" id="exp"><span class="md-icon" aria-hidden="true">content_copy</span>Copiar decks como JSON</button></div>';
+    '<div class="md-row"><button class="md-btn text has-icon" id="exp"><span class="md-icon" aria-hidden="true">content_copy</span>Copiar decks como JSON</button>' +
+    '<a class="md-btn text has-icon" href="../atribuciones/"><span class="md-icon" aria-hidden="true">info</span>Atribuciones</a></div></div>';
   app.innerHTML = h;
   app.querySelectorAll('[data-go]').forEach(b => b.onclick = () => start(b.dataset.id, b.dataset.go));
   $('#exp').onclick = async () => {
@@ -1108,7 +1118,7 @@ function renderCard() {
   app.querySelectorAll('.md-seg button').forEach(b => b.onclick = () => { state.dir = b.dataset.d; lsSet('dk-ui', state); S.shown = false; renderCard(); });
   if (!S.shown) {
     $('#flip').onclick = () => { S.shown = true; renderCard(); };
-    $('#card').onclick = e => { if (!e.target.closest('.snd')) { S.shown = true; renderCard(); } };
+    $('#card').onclick = e => { if (!e.target.closest('.snd, .snd-credit')) { S.shown = true; renderCard(); } };
   } else {
     $('#yes').onclick = () => { grade(w, true); S.i++; S.shown = false; renderCard(); };
     $('#no').onclick = () => { grade(w, false); S.i++; S.shown = false; renderCard(); };
