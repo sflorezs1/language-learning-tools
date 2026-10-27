@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wie spät ist es?</title>
+<style>
+/* Layout: station-sign header, then one column on phones; on desktop the clock sticks left and both readings sit on the right. */
+:root{
+  --bg:#EEEFEB; --surface:#FFFFFF; --surface-2:#E5E7E2; --ink:#14171B; --muted:#5A6068; --line:#CCCFC9;
+  --accent:#D2001B; --focus:#1456D6;
+  --good:#0E7A4B; --good-bg:#DCEFE4; --bad:#B3261E; --bad-bg:#F7DFDC;
+  --sign-bg:#14171B; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
+  --face:#F6F6F2; --hand:#14171B; --dial-accent:#D2001B;
+  --f-display:'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;
+  --f-body:'Barlow','Helvetica Neue',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101215; --surface:#181B1F; --surface-2:#22262B; --ink:#ECEEEF; --muted:#9AA1A9; --line:#30353B;
+    --accent:#FF4A5E; --focus:#7FA8FF;
+    --good:#6CD39C; --good-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714;
+    --sign-bg:#1E2227; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101215; --surface:#181B1F; --surface-2:#22262B; --ink:#ECEEEF; --muted:#9AA1A9; --line:#30353B;
+  --accent:#FF4A5E; --focus:#7FA8FF;
+  --good:#6CD39C; --good-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714;
+  --sign-bg:#1E2227; --sign-fg:#F4F4F0; --sign-muted:#A9AFB6;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--f-body)}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+
+.sign{background:var(--sign-bg);color:var(--sign-fg);border-bottom:4px solid var(--accent)}
+.sign .wrap{padding-block:20px 18px}
+.sign h1{font-size:clamp(2.1rem,8vw,3.2rem);font-weight:700;letter-spacing:.01em;line-height:1.02}
+.sign p{margin:6px 0 0;color:var(--sign-muted);font-size:15px;max-width:60ch}
+
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 0 20px}
+.tab{min-height:46px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:600 1.1rem var(--f-display);letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button{font-family:inherit}
+button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.btn{min-height:44px;padding:0 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;font:500 15px var(--f-body);cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.sm{min-height:36px;padding:0 12px;font-size:14px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+:root[data-theme="dark"] .btn.primary{color:#1A0508}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#1A0508}}
+.chip{display:inline-flex;align-items:center;padding:2px 10px;border-radius:999px;background:var(--surface-2);color:var(--ink);font-size:13px;line-height:1.6}
+.chip.accent{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip.accent{color:#1A0508}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.accent{color:#1A0508}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+
+/* Study */
+.study{display:grid;gap:18px}
+@media (min-width:880px){
+  .study{grid-template-columns:minmax(320px,400px) minmax(0,1fr);align-items:start}
+  .clockbox{position:sticky;top:16px}
+}
+.clockwrap{width:100%;max-width:360px;margin:0 auto;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.clockwrap svg{display:block;width:100%;height:auto}
+.digital{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 2px}
+.dig{font:700 3.3rem/1 var(--f-display);letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.hint{margin:0 0 14px;text-align:center;color:var(--muted);font-size:13px}
+.controls{display:grid;gap:10px}
+.grp{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.grp .btn{flex:1 1 0;min-width:0}
+.gl{min-width:4.6rem;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.09em}
+.readout{display:grid;gap:14px;min-width:0}
+.rd header{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+.rd h2{font-size:1.3rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.sent{margin:10px 0 8px;font:600 clamp(1.7rem,6vw,2.3rem)/1.15 var(--f-display);overflow-wrap:anywhere}
+.sent b{font-weight:700}
+.pat{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+.pc{display:grid;gap:2px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.pc b{font:600 1.2rem var(--f-display)}
+.pc i{font-style:normal;font-size:12px;color:var(--muted)}
+.lab{margin:12px 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.alts{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.alts b{font:600 1.15rem var(--f-display)}
+.alts small{color:var(--muted);font-size:13px;margin-left:6px}
+.why{margin:10px 0 0;color:var(--muted);font-size:15px;max-width:62ch}
+.rowbtns{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* Dial */
+.c-face{fill:var(--face);stroke:var(--hand);stroke-width:5}
+.c-tick{stroke:var(--hand);stroke-linecap:butt}
+.c-num{fill:var(--hand);font:600 15px var(--f-body);text-anchor:middle;dominant-baseline:central}
+.c-num.ref{fill:#fff}
+.c-ref{fill:var(--dial-accent)}
+.c-arc{fill:none;stroke:var(--dial-accent);stroke-width:5;opacity:.45}
+.c-lab{fill:var(--hand);opacity:.4;font:600 9px var(--f-body);text-anchor:middle;dominant-baseline:central;letter-spacing:.06em}
+.c-lab.on{fill:var(--dial-accent);opacity:1}
+.c-hand{fill:var(--hand)}
+.c-hub{fill:var(--hand)}
+.c-dot{fill:var(--dial-accent)}
+
+/* Practice */
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:12px;font-size:14px;color:var(--muted)}
+.stats b{color:var(--ink);font:700 1.5rem/1 var(--f-display);margin-left:6px;font-variant-numeric:tabular-nums}
+.qtop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.qclock{max-width:280px;margin:6px auto 4px}
+.qclock svg{display:block;width:100%;height:auto}
+.qdp{display:flex;justify-content:center;margin-bottom:6px}
+.qprompt{text-align:center;margin:10px 0 14px}
+.qphrase{font:700 clamp(1.9rem,8vw,2.8rem)/1.1 var(--f-display);text-align:center;margin:10px 0 4px;overflow-wrap:anywhere}
+.opts{display:grid;gap:10px;grid-template-columns:1fr}
+@media (min-width:560px){.opts{grid-template-columns:1fr 1fr}}
+.opt{display:flex;align-items:center;gap:12px;min-height:58px;padding:10px 14px;text-align:left;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font:600 1.3rem/1.2 var(--f-display);cursor:pointer;min-width:0}
+.opt:hover:not(:disabled){background:var(--surface-2)}
+.opt .k{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;background:var(--surface-2);font:600 13px var(--f-body);color:var(--muted);flex:none}
+.opt .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.opt .mk{font:700 1rem var(--f-body);flex:none}
+.opt:disabled{cursor:default;color:var(--ink)}
+.opt.ok{border-color:var(--good);background:var(--good-bg)}
+.opt.bad{border-color:var(--bad);background:var(--bad-bg)}
+.opts.clocks{grid-template-columns:1fr 1fr}
+.optc{display:grid;gap:6px;justify-items:center;padding:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;cursor:pointer;min-width:0}
+.optc:hover:not(:disabled){background:var(--surface-2)}
+.optc:disabled{cursor:default}
+.optc svg{display:block;width:100%;max-width:150px;height:auto}
+.optc .cap{font:600 1.15rem var(--f-display);min-height:1.5em;font-variant-numeric:tabular-nums}
+.optc.ok{border-color:var(--good);background:var(--good-bg)}
+.optc.bad{border-color:var(--bad);background:var(--bad-bg)}
+.fb{margin-top:16px;padding:14px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface-2)}
+.fb.ok{border-color:var(--good)}
+.fb.bad{border-color:var(--bad)}
+.fb h3{font-size:1.4rem;font-weight:700;letter-spacing:.02em}
+.fb.ok h3{color:var(--good)}
+.fb.bad h3{color:var(--bad)}
+.fbl{margin:8px 0 0;font-size:15px}
+.fbl b{font:600 1.2rem var(--f-display)}
+.settings{margin-top:18px;display:grid;gap:12px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg .btn{flex:1 1 auto}
+
+/* Table */
+.rule{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:16px}
+.rule div{padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.rule b{display:block;font:700 1.35rem var(--f-display);letter-spacing:.02em}
+.rule span{color:var(--muted);font-size:14px}
+.hourbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.hourbar .big{font:700 1.8rem var(--f-display);min-width:5.5rem;text-align:center;font-variant-numeric:tabular-nums}
+.trows{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.trow{display:grid;grid-template-columns:4.6rem minmax(0,1fr);gap:2px 14px;width:100%;text-align:left;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer;font:inherit;align-items:start}
+.trow:hover{background:var(--surface-2)}
+.trow .td{grid-row:span 2;font:700 1.7rem/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.trow .lb{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.trow .cell{min-width:0;overflow-wrap:anywhere}
+.trow .v{font:600 1.15rem/1.25 var(--f-display)}
+.trow .alt{display:block;color:var(--muted);font-size:13px}
+@media (min-width:760px){
+  .trow{grid-template-columns:5rem minmax(0,1fr) minmax(0,1fr)}
+  .trow .td{grid-row:auto}
+}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:min(92vw,420px);padding:10px 16px;border-radius:10px;background:var(--ink);color:var(--bg);font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="sign">
+  <div class="wrap">
+    <h1>Wie spät ist es?</h1>
+    <p>La hora en alemán: lectura formal (24 h) y lectura coloquial (halb, Viertel, vor, nach).</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button class="tab" role="tab" data-tab="study" aria-selected="true">Estudiar</button>
+    <button class="tab" role="tab" data-tab="practice" aria-selected="false">Practicar</button>
+    <button class="tab" role="tab" data-tab="table" aria-selected="false">Tabla</button>
+  </nav>
+  <section id="view" role="tabpanel"></section>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/*LOGIC*/
+const UNITS=['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+const TENS={20:'zwanzig',30:'dreißig',40:'vierzig',50:'fünfzig'};
+function num(n,o){
+  const ein=!!(o&&o.ein);
+  if(n<20){ return (n===1&&ein)?'ein':UNITS[n]; }
+  const t=Math.floor(n/10)*10,u=n%10;
+  if(u===0) return TENS[t];
+  return (u===1?'ein':UNITS[u])+'und'+TENS[t];
+}
+function pad(n){return String(n).padStart(2,'0');}
+function formal(h,m){
+  const hs=num(h,{ein:true})+' Uhr';
+  return m===0?hs:hs+' '+num(m);
+}
+function formalWhy(h,m){
+  let t='En la lectura formal no existen halb, Viertel, vor ni nach: solo hora (0–23) + Uhr + minutos.';
+  if(h===0) t+=' A medianoche se dice «null Uhr».';
+  else if(h===12) t+=' «zwölf Uhr» es el mediodía.';
+  else if(h>12) t+=' '+h+' h son las '+(h-12)+' del reloj de 12 horas ('+h+' − 12).';
+  if(h===1||h===21) t+=' Delante de «Uhr» se dice «ein», no «eins».';
+  if(m===1) t+=' El minuto 1 se dice «eins».';
+  return t;
+}
+function colloq(h,m){
+  const H=(h%12)||12, N=((h+1)%12)||12;
+  const hw=n=>n===1?'eins':num(n);
+  const cnt=c=>c===1?'eine Minute':num(c);
+  const alts=[]; let main,ref,kind,why;
+  if(m===0){
+    main=(H===1?'ein':num(H))+' Uhr'; ref=H; kind='punkt';
+    if(h===0) alts.push({text:'Mitternacht',note:'medianoche'});
+    if(h===12) alts.push({text:'Mittag',note:'mediodía'});
+    why='En punto: el número de la hora + «Uhr». La una es «ein Uhr», sin la «s» de «eins».';
+  } else if(m===15){
+    main='Viertel nach '+hw(H); ref=H; kind='viertelnach';
+    alts.push({text:'Viertel '+hw(N),note:'regional: sur y este de Alemania'});
+    why='«Viertel nach» = y cuarto. Se apoya en la hora que acaba de pasar ('+H+').';
+  } else if(m<25){
+    main=cnt(m)+' nach '+hw(H); ref=H; kind='nach';
+    if(m===20) alts.push({text:'zehn vor halb '+hw(N),note:'también frecuente'});
+    why='Hasta el minuto 24 se cuenta desde la hora que acaba de pasar: minutos + «nach» + esa hora ('+H+').';
+  } else if(m<30){
+    main=cnt(30-m)+' vor halb '+hw(N); ref=N; kind='vorhalb';
+    if(m===25) alts.push({text:'fünfundzwanzig nach '+hw(H),note:'menos usual'});
+    why='Faltan '+(30-m)+' min para la media hora: «vor halb» + la hora SIGUIENTE ('+N+'). «halb» siempre mira a la hora que viene.';
+  } else if(m===30){
+    main='halb '+hw(N); ref=N; kind='halb';
+    why='«halb» mira hacia la hora siguiente: '+H+':30 es «halb '+hw(N)+'» (media hora antes de las '+N+'), no «halb '+hw(H)+'».';
+  } else if(m<=35){
+    main=cnt(m-30)+' nach halb '+hw(N); ref=N; kind='nachhalb';
+    if(m===35) alts.push({text:'fünfundzwanzig vor '+hw(N),note:'menos usual'});
+    why='Pasaron '+(m-30)+' min de la media: «nach halb» + la hora SIGUIENTE ('+N+').';
+  } else if(m===45){
+    main='Viertel vor '+hw(N); ref=N; kind='viertelvor';
+    alts.push({text:'dreiviertel '+hw(N),note:'regional: sur y este de Alemania'});
+    why='«Viertel vor» = menos cuarto. Se apoya en la hora siguiente ('+N+').';
+  } else {
+    main=cnt(60-m)+' vor '+hw(N); ref=N; kind='vor';
+    if(m===40) alts.push({text:'zehn nach halb '+hw(N),note:'también frecuente'});
+    why='Desde el minuto 36 se cuenta hacia la hora siguiente: minutos que faltan + «vor» + '+N+'.';
+  }
+  return {main:main,alts:alts,ref:ref,kind:kind,why:why};
+}
+function daypart(h){
+  if(h<5) return ['nachts','noche'];
+  if(h<9) return ['morgens','mañana'];
+  if(h<12) return ['vormittags','media mañana'];
+  if(h<14) return ['mittags','mediodía'];
+  if(h<18) return ['nachmittags','tarde'];
+  if(h<22) return ['abends','tarde-noche'];
+  return ['nachts','noche'];
+}
+function allowedMinutes(level){
+  if(level===1) return [0,30];
+  if(level===2) return [0,15,30,45];
+  const a=[]; for(let i=0;i<60;i+=5) a.push(i); return a;
+}
+/*END-LOGIC*/
+
+(function(){
+'use strict';
+const view=document.getElementById('view');
+const store={
+  get:function(){try{return JSON.parse(localStorage.getItem('wse.v1'))||{};}catch(e){return {};}},
+  set:function(o){try{localStorage.setItem('wse.v1',JSON.stringify(o));}catch(e){}}
+};
+const saved=store.get();
+const ALLT=['colloq','formal','clock'];
+const S={
+  tab:'study',
+  study:{h:14,m:30,step:5,help:true},
+  tableH:7,
+  level:[1,2,3].indexOf(saved.level)>=0?saved.level:3,
+  types:(Array.isArray(saved.types)?saved.types.filter(function(t){return ALLT.indexOf(t)>=0;}):[]),
+  best:saved.best|0,
+  streak:0,total:0,correct:0,
+  q:null,answered:null,queue:[],prev:null
+};
+if(!S.types.length) S.types=ALLT.slice();
+function persist(){store.set({level:S.level,types:S.types,best:S.best});}
+const esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+const pick=function(a){return a[Math.floor(Math.random()*a.length)];};
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+const norm=function(T){return ((T%1440)+1440)%1440;};
+const hasSpeech='speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
+
+/* ---------- Dial ---------- */
+function pt(deg,r){const a=deg*Math.PI/180;return [100+r*Math.sin(a),100-r*Math.cos(a)];}
+function f2(n){return n.toFixed(2);}
+function clockSVG(h,m,o){
+  o=o||{};
+  const annot=!!o.annot, c=o.c||colloq(h,m);
+  let s='<svg viewBox="0 0 200 200" role="img" aria-label="Reloj analógico: '+((h%12)||12)+':'+pad(m)+'" xmlns="http://www.w3.org/2000/svg">';
+  s+='<circle class="c-face" cx="100" cy="100" r="97"/>';
+  for(let i=0;i<60;i++){
+    const big=i%5===0, p0=pt(i*6,big?77:85), p1=pt(i*6,91);
+    s+='<line class="c-tick" x1="'+f2(p0[0])+'" y1="'+f2(p0[1])+'" x2="'+f2(p1[0])+'" y2="'+f2(p1[1])+'" stroke-width="'+(big?4:1.4)+'"/>';
+  }
+  if(annot&&m>0){
+    const a0=m<=30?0:m*6, a1=m<=30?m*6:360;
+    const p0=pt(a0,52), p1=pt(a1,52);
+    s+='<path class="c-arc" d="M'+f2(p0[0])+' '+f2(p0[1])+' A52 52 0 '+((a1-a0)>180?1:0)+' 1 '+f2(p1[0])+' '+f2(p1[1])+'"/>';
+    const lp=pt(62,36), lv=pt(298,36), lh=pt(180,36);
+    s+='<text class="c-lab'+(m<=30?' on':'')+'" x="'+f2(lp[0])+'" y="'+f2(lp[1])+'">nach</text>';
+    s+='<text class="c-lab'+(m>30?' on':'')+'" x="'+f2(lv[0])+'" y="'+f2(lv[1])+'">vor</text>';
+    s+='<text class="c-lab'+(m===30?' on':'')+'" x="'+f2(lh[0])+'" y="'+f2(lh[1])+'">halb</text>';
+  }
+  for(let n=1;n<=12;n++){
+    const p=pt(n*30,66), isRef=annot&&c.ref===n;
+    if(isRef) s+='<circle class="c-ref" cx="'+f2(p[0])+'" cy="'+f2(p[1])+'" r="11"/>';
+    s+='<text class="c-num'+(isRef?' ref':'')+'" x="'+f2(p[0])+'" y="'+f2(p[1])+'">'+n+'</text>';
+  }
+  const ha=(h%12)*30+m*0.5, ma=m*6;
+  s+='<g transform="rotate('+ha+' 100 100)"><rect class="c-hand" x="96" y="48" width="8" height="64"/></g>';
+  s+='<g transform="rotate('+ma+' 100 100)"><rect class="c-hand" x="97.5" y="14" width="5" height="98"/></g>';
+  s+='<circle class="c-hub" cx="100" cy="100" r="6"/><circle class="c-dot" cx="100" cy="100" r="3"/>';
+  return s+'</svg>';
+}
+
+/* ---------- Voice ---------- */
+let toastT=null;
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');},2800);
+}
+function speak(text){
+  try{
+    if(!hasSpeech){toast('Este navegador no tiene voz sintética.');return;}
+    const voices=speechSynthesis.getVoices()||[];
+    const v=voices.find(function(x){return x.lang&&x.lang.toLowerCase().indexOf('de')===0;});
+    if(voices.length&&!v){toast('No hay una voz en alemán instalada en este dispositivo.');return;}
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=0.85;if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){toast('No se pudo reproducir el audio.');}
+}
+function speakBtn(text){
+  return hasSpeech?'<button class="btn sm" data-say="'+esc(text)+'">Escuchar</button>':'';
+}
+
+/* ---------- Study ---------- */
+function studyHTML(){
+  return '<div class="study">'+
+  '<div class="panel clockbox">'+
+    '<div class="clockwrap" id="clockwrap"></div>'+
+    '<div class="digital"><span class="dig" id="dig"></span><span class="chip" id="dp"></span></div>'+
+    '<p class="hint">Arrastra sobre el reloj para mover los minutos.</p>'+
+    '<div class="controls">'+
+      '<div class="grp"><span class="gl">Hora</span><button class="btn" data-act="h-">−1 h</button><button class="btn" data-act="h+">+1 h</button></div>'+
+      '<div class="grp"><span class="gl">Minutos</span><button class="btn" data-act="m-" id="mminus"></button><button class="btn" data-act="m+" id="mplus"></button></div>'+
+      '<div class="grp"><button class="btn" data-act="ampm">Mañana / tarde</button><button class="btn" data-act="rand">Al azar</button><button class="btn" data-act="now">Hora actual</button></div>'+
+      '<div class="grp"><button class="btn" data-act="step5" id="b5" aria-pressed="true">De 5 en 5</button><button class="btn" data-act="step1" id="b1" aria-pressed="false">Minuto exacto</button><button class="btn" data-act="help" id="bh" aria-pressed="true">Ayudas</button></div>'+
+    '</div>'+
+  '</div>'+
+  '<div class="readout" id="readout"></div>'+
+  '</div>';
+}
+function readoutHTML(h,m,c){
+  const f=formal(h,m), dp=daypart(h);
+  const pat='<span class="pc"><b>'+esc(num(h,{ein:true}))+'</b><i>hora (0–23)</i></span>'+
+    '<span class="pc"><b>Uhr</b><i>fijo</i></span>'+
+    (m>0?'<span class="pc"><b>'+esc(num(m))+'</b><i>minutos</i></span>':'');
+  let alts='';
+  if(c.alts.length){
+    alts='<p class="lab">También se dice</p><ul class="alts">'+c.alts.map(function(a){
+      return '<li><b>'+esc(a.text)+'</b><small>'+esc(a.note)+'</small></li>';}).join('')+'</ul>';
+  }
+  return '<article class="panel rd">'+
+    '<header><h2>Lectura formal</h2><span class="chip">24 h · horarios, radio, citas</span></header>'+
+    '<p class="sent">Es ist <b>'+esc(f)+'</b>.</p>'+
+    '<div class="pat">'+pat+'</div>'+
+    '<p class="why">'+esc(formalWhy(h,m))+' '+esc(dp[0])+' = '+esc(dp[1])+'.</p>'+
+    '<div class="rowbtns">'+speakBtn('Es ist '+f)+'</div>'+
+  '</article>'+
+  '<article class="panel rd">'+
+    '<header><h2>Lectura coloquial</h2><span class="chip">12 h · conversación diaria</span></header>'+
+    '<p class="sent">Es ist <b>'+esc(c.main)+'</b>.</p>'+
+    alts+
+    '<p class="why">'+esc(c.why)+'</p>'+
+    '<div class="rowbtns">'+speakBtn('Es ist '+c.main)+'</div>'+
+  '</article>';
+}
+function updateStudy(){
+  const st=S.study, h=st.h, m=st.m, c=colloq(h,m), dp=daypart(h);
+  document.getElementById('clockwrap').innerHTML=clockSVG(h,m,{annot:st.help,c:c});
+  document.getElementById('dig').textContent=pad(h)+':'+pad(m);
+  document.getElementById('dp').textContent=dp[0]+' · '+dp[1];
+  document.getElementById('readout').innerHTML=readoutHTML(h,m,c);
+  document.getElementById('mminus').textContent='−'+st.step+' min';
+  document.getElementById('mplus').textContent='+'+st.step+' min';
+  document.getElementById('b5').setAttribute('aria-pressed',st.step===5);
+  document.getElementById('b1').setAttribute('aria-pressed',st.step===1);
+  document.getElementById('bh').setAttribute('aria-pressed',st.help);
+}
+function snap5(){
+  const st=S.study;
+  let m=Math.round(st.m/5)*5;
+  if(m===60){m=0;st.h=(st.h+1)%24;}
+  st.m=m;
+}
+function bindDrag(){
+  const w=document.getElementById('clockwrap');
+  let drag=false;
+  function setFrom(ev,first){
+    const svg=w.querySelector('svg'); if(!svg) return;
+    const r=svg.getBoundingClientRect();
+    const dx=ev.clientX-(r.left+r.width/2), dy=ev.clientY-(r.top+r.height/2);
+    if(Math.hypot(dx,dy)<r.width*0.1) return;
+    let a=Math.atan2(dx,-dy)*180/Math.PI; if(a<0) a+=360;
+    const st=S.study;
+    const nm=st.step===5?(Math.round(a/30)*5)%60:Math.round(a/6)%60;
+    const prev=st.m;
+    if(nm===prev) return;
+    if(!first){
+      if(prev>=45&&nm<=15) st.h=(st.h+1)%24;
+      else if(prev<=15&&nm>=45) st.h=(st.h+23)%24;
+    }
+    st.m=nm; updateStudy();
+  }
+  w.addEventListener('pointerdown',function(ev){drag=true;try{w.setPointerCapture(ev.pointerId);}catch(e){}setFrom(ev,true);});
+  w.addEventListener('pointermove',function(ev){if(drag) setFrom(ev,false);});
+  const end=function(){drag=false;};
+  w.addEventListener('pointerup',end);w.addEventListener('pointercancel',end);
+}
+
+/* ---------- Table ---------- */
+function tableHTML(){
+  const h=S.tableH, dp=daypart(h);
+  let rows='';
+  for(let m=0;m<60;m+=5){
+    const c=colloq(h,m);
+    const alt=c.alts.length?'<span class="alt">también: '+c.alts.map(function(a){return esc(a.text);}).join(' · ')+'</span>':'';
+    rows+='<li><button class="trow" data-act="load" data-h="'+h+'" data-m="'+m+'">'+
+      '<span class="td">'+pad(h)+':'+pad(m)+'</span>'+
+      '<span class="cell"><span class="lb">Formal</span><span class="v">'+esc(formal(h,m))+'</span></span>'+
+      '<span class="cell"><span class="lb">Coloquial</span><span class="v">'+esc(c.main)+'</span>'+alt+'</span>'+
+    '</button></li>';
+  }
+  return '<div class="rule">'+
+    '<div><b>:01 – :24</b><span>minutos + <em>nach</em> + hora actual</span></div>'+
+    '<div><b>:25 – :35</b><span><em>halb</em> como referencia, con la hora siguiente</span></div>'+
+    '<div><b>:36 – :59</b><span>minutos que faltan + <em>vor</em> + hora siguiente</span></div>'+
+  '</div>'+
+  '<div class="hourbar"><button class="btn" data-act="th-">−1 h</button><span class="big">'+pad(h)+' h</span><button class="btn" data-act="th+">+1 h</button><span class="chip">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>'+
+  '<p class="hint" style="text-align:left">Toca una fila para verla en el reloj.</p>'+
+  '<ul class="trows">'+rows+'</ul>';
+}
+
+/* ---------- Practice ---------- */
+function keyOf(mode,h,m){
+  if(mode==='colloq') return colloq(h,m).main;
+  if(mode==='formal') return formal(h,m);
+  return ((h%12)||12)+':'+m;
+}
+function makeOptions(mode,h,m){
+  const T=h*60+m, mins=allowedMinutes(S.level).concat([m]);
+  const seen={}; seen[keyOf(mode,h,m)]=1;
+  const out=[], pool=[];
+  [-60,-30,-15,-10,-5,5,10,15,30,60].forEach(function(d){pool.push(norm(T+d));});
+  pool.push(norm(h*60+((60-m)%60)));
+  shuffle(pool);
+  const order=(mode==='formal'?[norm(T+720)]:[]).concat(pool);
+  order.forEach(function(t){
+    if(out.length>=3) return;
+    const mm=t%60, hh=Math.floor(t/60);
+    if(mins.indexOf(mm)<0) return;
+    const k=keyOf(mode,hh,mm);
+    if(seen[k]) return; seen[k]=1; out.push({h:hh,m:mm});
+  });
+  let guard=0;
+  while(out.length<3&&guard++<200){
+    const hh=Math.floor(Math.random()*24), mm=pick(allowedMinutes(S.level)), k=keyOf(mode,hh,mm);
+    if(seen[k]) continue; seen[k]=1; out.push({h:hh,m:mm});
+  }
+  const opts=out.map(function(x){return {h:x.h,m:x.m,correct:false};});
+  opts.push({h:h,m:m,correct:true});
+  return shuffle(opts);
+}
+function newQuestion(){
+  S.queue.forEach(function(r){r.wait--;});
+  const r=S.queue.find(function(x){return x.wait<=0;});
+  let type,pk,h,m,retry=false;
+  if(r){
+    S.queue.splice(S.queue.indexOf(r),1);
+    type=r.type;pk=r.pk;h=r.h;m=r.m;retry=true;
+  } else {
+    type=pick(S.types);
+    const mins=allowedMinutes(S.level);
+    let g=0;
+    do{h=Math.floor(Math.random()*24);m=pick(mins);g++;}while(S.prev&&S.prev.h===h&&S.prev.m===m&&g<50);
+    pk=type==='clock'?pick(['colloq','formal']):type;
+  }
+  const mode=type==='clock'?'clock':type;
+  S.q={type:type,pk:pk,h:h,m:m,retry:retry,options:makeOptions(mode,h,m)};
+  S.answered=null;
+}
+const TLAB={colloq:'Reloj → coloquial',formal:'Reloj → formal',clock:'Frase → reloj'};
+const LVL=[null,'Horas y medias','Con cuartos','Cada 5 min'];
+function quizHTML(){
+  const q=S.q, done=S.answered!==null, c=colloq(q.h,q.m), f=formal(q.h,q.m), dp=daypart(q.h);
+  let body='';
+  if(q.type==='clock'){
+    const phrase=q.pk==='colloq'?'Es ist '+c.main:'Es ist '+f;
+    body+='<p class="qphrase">'+esc(phrase)+'</p><p class="qprompt">¿Qué reloj muestra esta hora?</p>';
+    body+='<div class="opts clocks">'+q.options.map(function(o,i){
+      const cls=done?(o.correct?' ok':(S.answered===i?' bad':'')):'';
+      const cap=done?(((o.h%12)||12)+':'+pad(o.m)):'&nbsp;';
+      return '<button class="optc'+cls+'" data-opt="'+i+'"'+(done?' disabled':'')+' aria-label="Reloj '+(i+1)+'">'+
+        clockSVG(o.h,o.m,{})+'<span class="cap">'+cap+'</span></button>';
+    }).join('')+'</div>';
+  } else {
+    body+='<div class="qclock">'+clockSVG(q.h,q.m,{})+'</div>';
+    body+='<div class="qdp"><span class="chip">'+esc(dp[0])+' · '+esc(dp[1])+'</span></div>';
+    body+='<p class="qprompt">'+(q.type==='colloq'?'¿Cómo se dice en lenguaje coloquial?':'¿Cómo se lee en formal (24 h)?')+'</p>';
+    body+='<div class="opts">'+q.options.map(function(o,i){
+      const txt=q.type==='colloq'?colloq(o.h,o.m).main:formal(o.h,o.m);
+      const cls=done?(o.correct?' ok':(S.answered===i?' bad':'')):'';
+      const mk=done?(o.correct?'✓':(S.answered===i?'✕':'')):'';
+      return '<button class="opt'+cls+'" data-opt="'+i+'"'+(done?' disabled':'')+'><span class="k">'+(i+1)+'</span><span class="t">'+esc(txt)+'</span><span class="mk" aria-hidden="true">'+mk+'</span></button>';
+    }).join('')+'</div>';
+  }
+  let fb='';
+  if(done){
+    const ok=q.options[S.answered].correct;
+    const why=(q.pk==='formal')?formalWhy(q.h,q.m):c.why;
+    fb='<div class="fb '+(ok?'ok':'bad')+'" role="status">'+
+      '<h3>'+(ok?'¡Richtig!':'Todavía no')+' · '+pad(q.h)+':'+pad(q.m)+'</h3>'+
+      '<p class="fbl">Formal: <b>Es ist '+esc(f)+'</b></p>'+
+      '<p class="fbl">Coloquial: <b>Es ist '+esc(c.main)+'</b></p>'+
+      '<p class="why">'+esc(why)+'</p>'+
+      '<div class="rowbtns"><button class="btn primary" data-act="next" id="nextbtn">Siguiente</button>'+
+      speakBtn('Es ist '+(q.pk==='formal'?f:c.main))+'</div>'+
+    '</div>';
+  }
+  const stats='<div class="stats"><span>Racha<b>'+S.streak+'</b></span><span>Mejor racha<b>'+S.best+'</b></span><span>Aciertos<b>'+S.correct+'/'+S.total+'</b></span></div>';
+  const settings='<div class="panel settings">'+
+    '<div><p class="lab" style="margin-top:0">Nivel</p><div class="seg">'+[1,2,3].map(function(l){
+      return '<button class="btn" data-act="level" data-v="'+l+'" aria-pressed="'+(S.level===l)+'">'+LVL[l]+'</button>';}).join('')+'</div></div>'+
+    '<div><p class="lab" style="margin-top:0">Tipos de ejercicio</p><div class="seg">'+ALLT.map(function(t){
+      return '<button class="btn" data-act="type" data-v="'+t+'" aria-pressed="'+(S.types.indexOf(t)>=0)+'">'+TLAB[t]+'</button>';}).join('')+'</div></div>'+
+  '</div>';
+  return stats+'<div class="panel"><div class="qtop"><span class="chip">'+TLAB[q.type]+'</span>'+(q.retry?'<span class="chip accent">Repaso de un fallo</span>':'')+'</div>'+body+fb+'</div>'+settings;
+}
+function renderPractice(){
+  view.innerHTML=quizHTML();
+  if(S.answered!==null){const b=document.getElementById('nextbtn');if(b)b.focus({preventScroll:true});}
+}
+function answer(i){
+  if(S.answered!==null||!S.q||i<0||i>=S.q.options.length) return;
+  const q=S.q; S.answered=i; S.total++;
+  if(q.options[i].correct){S.correct++;S.streak++;if(S.streak>S.best)S.best=S.streak;}
+  else{S.streak=0;S.queue.push({type:q.type,pk:q.pk,h:q.h,m:q.m,wait:3+Math.floor(Math.random()*3)});}
+  S.prev={h:q.h,m:q.m};
+  persist();renderPractice();
+}
+function nextQ(){newQuestion();renderPractice();}
+
+/* ---------- Tabs + events ---------- */
+function setTab(t){
+  S.tab=t;
+  document.querySelectorAll('.tab').forEach(function(b){
+    const on=b.dataset.tab===t;b.setAttribute('aria-selected',on?'true':'false');b.tabIndex=on?0:-1;
+  });
+  if(t==='study'){view.innerHTML=studyHTML();updateStudy();bindDrag();}
+  else if(t==='practice'){if(!S.q)newQuestion();renderPractice();}
+  else{view.innerHTML=tableHTML();}
+}
+document.querySelector('.tabs').addEventListener('click',function(e){
+  const b=e.target.closest('.tab');if(b)setTab(b.dataset.tab);
+});
+view.addEventListener('click',function(e){
+  const say=e.target.closest('[data-say]');
+  if(say){speak(say.dataset.say);return;}
+  const op=e.target.closest('[data-opt]');
+  if(op){answer(parseInt(op.dataset.opt,10));return;}
+  const b=e.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act, st=S.study;
+  if(S.tab==='study'){
+    if(a==='h-')st.h=(st.h+23)%24;
+    else if(a==='h+')st.h=(st.h+1)%24;
+    else if(a==='m-'||a==='m+'){
+      const T=norm(st.h*60+st.m+(a==='m+'?st.step:-st.step));
+      st.h=Math.floor(T/60);st.m=T%60;
+    }
+    else if(a==='ampm')st.h=(st.h+12)%24;
+    else if(a==='rand'){st.h=Math.floor(Math.random()*24);st.m=st.step===5?pick(allowedMinutes(3)):Math.floor(Math.random()*60);}
+    else if(a==='now'){const d=new Date();st.h=d.getHours();st.m=d.getMinutes();if(st.step===5)snap5();}
+    else if(a==='step5'){st.step=5;snap5();}
+    else if(a==='step1')st.step=1;
+    else if(a==='help')st.help=!st.help;
+    updateStudy();
+  } else if(S.tab==='table'){
+    if(a==='th-'){S.tableH=(S.tableH+23)%24;view.innerHTML=tableHTML();}
+    else if(a==='th+'){S.tableH=(S.tableH+1)%24;view.innerHTML=tableHTML();}
+    else if(a==='load'){st.h=parseInt(b.dataset.h,10);st.m=parseInt(b.dataset.m,10);setTab('study');window.scrollTo(0,0);}
+  } else if(S.tab==='practice'){
+    if(a==='next')nextQ();
+    else if(a==='level'){S.level=parseInt(b.dataset.v,10);persist();S.queue=[];newQuestion();renderPractice();}
+    else if(a==='type'){
+      const v=b.dataset.v, i=S.types.indexOf(v);
+      if(i>=0){if(S.types.length>1)S.types.splice(i,1);}else S.types.push(v);
+      persist();
+      if(S.answered===null){newQuestion();}
+      renderPractice();
+    }
+  }
+});
+document.addEventListener('keydown',function(e){
+  if(S.tab!=='practice'||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.target&&e.target.matches&&e.target.matches('input,textarea,select'))return;
+  if(S.answered===null&&['1','2','3','4'].indexOf(e.key)>=0){answer(parseInt(e.key,10)-1);}
+  else if(S.answered!==null&&(e.key==='n'||(e.key==='Enter'&&!(e.target&&e.target.closest&&e.target.closest('button'))))){e.preventDefault();nextQ();}
+});
+if(hasSpeech){try{speechSynthesis.getVoices();}catch(e){}}
+setTab('study');
+})();
+</script>
+</body>
+</html>
