@@ -13,7 +13,7 @@
 /* Colores de caso: Akkusativ = primary (azul), Dativ = tertiary (malva). Ver .c-akk y .c-dat. */
 .c-akk{--c:var(--md-primary);--on-c:var(--md-on-primary);--cc:var(--md-primary-container);--on-cc:var(--md-on-primary-container)}
 .c-dat{--c:var(--md-tertiary);--on-c:var(--md-on-tertiary);--cc:var(--md-tertiary-container);--on-cc:var(--md-on-tertiary-container)}
-.c-wech{--c:var(--md-secondary);--on-c:var(--md-on-secondary);--cc:var(--md-secondary-container);--on-cc:var(--md-on-secondary-container)}
+.c-nom,.c-wech{--c:var(--md-secondary);--on-c:var(--md-on-secondary);--cc:var(--md-secondary-container);--on-cc:var(--md-on-secondary-container)}
 .view{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
 .center{text-align:center}
 .badge{display:inline-block;align-self:flex-start;padding:0 10px;border-radius:999px;background:var(--c);color:var(--on-c);font:500 12px/20px var(--md-font);letter-spacing:.5px}
@@ -41,6 +41,12 @@ table.ptab{width:100%;border-collapse:collapse;font:400 16px/24px var(--md-font)
 .ptab td:last-child,.ptab th:last-child{padding-right:0}
 .ptab td.akk{color:var(--md-primary);font-weight:500}
 .ptab td.dat{color:var(--md-tertiary);font-weight:500}
+.atab th,.atab td{padding-left:3px;padding-right:3px}
+.atab td{font-size:14px}
+.atab td:first-child{font-size:13px}
+.atab th{letter-spacing:.2px}
+.ptab td.nom{color:var(--md-on-surface);font-weight:500}
+.ptab td.gen{color:var(--md-on-surface-variant)}
 .ptab tr.sel td{background:var(--md-secondary-container)}
 .ptab .es{color:var(--md-on-surface-variant);font-size:13px}
 
@@ -125,6 +131,7 @@ const P = {
 };
 const PERSONS = ['ich','du','er','sie','es','wir','ihr','sie_pl','Sie'];
 const CASES = {
+  nom:{name:'Nominativ',q:'Wer? / Was?'},
   akk:{name:'Akkusativ',q:'Wen? / Was?'},
   dat:{name:'Dativ',q:'Wem?'},
   wech:{name:'Depende',q:'¿wo? / ¿wohin?'}
@@ -307,6 +314,93 @@ const PREPS = [
 const VITEMS = VERBS.map(function (v) { return {kind:'v',w:v[0],c:v[1],g:v[2],ex:v[3],exEs:v[4],note:v[5],id:'v:'+v[0]}; })
   .concat(PREPS.map(function (v) { return {kind:'p',w:v[0],c:v[1],g:v[2],ex:v[3],exEs:v[4],ex2:v[5]||'',ex2Es:v[6]||'',id:'p:'+v[0]}; }));
 
+/* Artículos. Orden de los casos: nominativo, acusativo, dativo, genitivo (este último solo como referencia). */
+const AF = {
+  def:{m:['der','den','dem','des'],f:['die','die','der','der'],n:['das','das','dem','des'],p:['die','die','den','der']},
+  ind:{m:['ein','einen','einem','eines'],f:['eine','eine','einer','einer'],n:['ein','ein','einem','eines'],p:null},
+  kein:{m:['kein','keinen','keinem','keines'],f:['keine','keine','keiner','keiner'],n:['kein','kein','keinem','keines'],p:['keine','keine','keinen','keiner']},
+  mein:{m:['mein','meinen','meinem','meines'],f:['meine','meine','meiner','meiner'],n:['mein','mein','meinem','meines'],p:['meine','meine','meinen','meiner']}
+};
+const CIDX = {nom:0, akk:1, dat:2, gen:3};
+const GL = {m:'masculino', f:'femenino', n:'neutro', p:'plural'};
+const GDEF = {m:'der', f:'die', n:'das', p:'die'};
+const ATYPES = [['def','der · die · das'],['ind','ein · eine'],['kein','kein · mein']];
+/* Frases de artículos: [oración con ___, género, tipo, caso, sustantivo, por qué, traducción] */
+const ARAW = [
+/* nominativo */
+['___ Mann arbeitet hier.','m','def','nom','Mann','Es el sujeto de la frase → Nominativ.','El hombre trabaja aquí.'],
+['___ Frau kommt aus Kolumbien.','f','def','nom','Frau','Es el sujeto de la frase → Nominativ.','La mujer es de Colombia.'],
+['___ Kind spielt im Garten.','n','def','nom','Kind','Es el sujeto de la frase → Nominativ.','El niño juega en el jardín.'],
+['___ Kinder spielen im Garten.','p','def','nom','Kinder','Es el sujeto de la frase → Nominativ.','Los niños juegan en el jardín.'],
+['Das ist ___ Tisch.','m','ind','nom','Tisch','Después de «sein» el sustantivo va en Nominativ.','Esto es una mesa.'],
+['Das ist ___ Lampe.','f','ind','nom','Lampe','Después de «sein» el sustantivo va en Nominativ.','Esto es una lámpara.'],
+['Das ist ___ Buch.','n','ind','nom','Buch','Después de «sein» el sustantivo va en Nominativ.','Esto es un libro.'],
+['___ Bruder wohnt in Berlin.','m','mein','nom','Bruder','Es el sujeto de la frase → Nominativ.','Mi hermano vive en Berlín.'],
+['___ Schwester ist Ärztin.','f','mein','nom','Schwester','Es el sujeto de la frase → Nominativ.','Mi hermana es médica.'],
+['___ Auto ist neu.','n','mein','nom','Auto','Es el sujeto de la frase → Nominativ.','Mi carro es nuevo.'],
+['Das ist ___ Problem.','n','kein','nom','Problem','Después de «sein» el sustantivo va en Nominativ.','Eso no es un problema.'],
+['Das ist ___ Lösung.','f','kein','nom','Lösung','Después de «sein» el sustantivo va en Nominativ.','Eso no es una solución.'],
+['___ Lehrer ist nett.','m','def','nom','Lehrer','Es el sujeto de la frase → Nominativ.','El profesor es amable.'],
+['___ Wohnung ist teuer.','f','def','nom','Wohnung','Es el sujeto de la frase → Nominativ.','El apartamento es caro.'],
+['___ Wetter ist heute schön.','n','def','nom','Wetter','Es el sujeto de la frase → Nominativ.','El clima está hermoso hoy.'],
+/* acusativo */
+['Ich sehe ___ Mann.','m','def','akk','Mann','«sehen» lleva acusativo. El masculino cambia: der → den.','Veo al hombre.'],
+['Ich kaufe ___ Tisch.','m','ind','akk','Tisch','Es el objeto directo → Akkusativ. El masculino cambia: ein → einen.','Compro una mesa.'],
+['Er hat ___ Hund.','m','ind','akk','Hund','«haben» lleva acusativo. El masculino cambia: ein → einen.','Él tiene un perro.'],
+['Sie liest ___ Zeitung.','f','def','akk','Zeitung','Es el objeto directo → Akkusativ. El femenino no cambia: die.','Ella lee el periódico.'],
+['Wir brauchen ___ Lampe.','f','ind','akk','Lampe','«brauchen» lleva acusativo. El femenino no cambia: eine.','Necesitamos una lámpara.'],
+['Ich lese ___ Buch.','n','def','akk','Buch','Es el objeto directo → Akkusativ. El neutro no cambia: das.','Leo el libro.'],
+['Hast du ___ Auto?','n','ind','akk','Auto','«haben» lleva acusativo. El neutro no cambia: ein.','¿Tienes carro?'],
+['Ich besuche ___ Bruder.','m','mein','akk','Bruder','«besuchen» lleva acusativo. El masculino cambia: mein → meinen.','Visito a mi hermano.'],
+['Ich rufe ___ Schwester an.','f','mein','akk','Schwester','«anrufen» lleva acusativo. El femenino no cambia: meine.','Llamo a mi hermana.'],
+['Er hat ___ Zeit.','f','kein','akk','Zeit','«haben» lleva acusativo. El femenino no cambia: keine.','Él no tiene tiempo.'],
+['Ich habe ___ Hunger.','m','kein','akk','Hunger','«haben» lleva acusativo. El masculino cambia: kein → keinen.','No tengo hambre.'],
+['Wir haben ___ Auto.','n','kein','akk','Auto','«haben» lleva acusativo. El neutro no cambia: kein.','No tenemos carro.'],
+['Er trinkt ___ Kaffee.','m','def','akk','Kaffee','Es el objeto directo → Akkusativ. El masculino cambia: der → den.','Él toma el café.'],
+['Ich esse ___ Apfel.','m','ind','akk','Apfel','Es el objeto directo → Akkusativ. El masculino cambia: ein → einen.','Como una manzana.'],
+['Ich sehe ___ Kinder.','p','def','akk','Kinder','En plural el acusativo es igual al nominativo: die.','Veo a los niños.'],
+['Hast du ___ Geschwister?','p','kein','akk','Geschwister','«haben» lleva acusativo. En plural no cambia: keine.','¿No tienes hermanos?'],
+['Wir kennen ___ Lehrer.','m','def','akk','Lehrer','«kennen» lleva acusativo. El masculino cambia: der → den.','Conocemos al profesor.'],
+['Es gibt ___ Supermarkt in der Nähe.','m','ind','akk','Supermarkt','«es gibt» lleva acusativo. El masculino cambia: ein → einen.','Hay un supermercado cerca.'],
+['Ich nehme ___ Bus.','m','def','akk','Bus','«nehmen» lleva acusativo. El masculino cambia: der → den.','Tomo el bus.'],
+['Das Geschenk ist für ___ Lehrer.','m','def','akk','Lehrer','«für» siempre lleva acusativo. El masculino cambia: der → den.','El regalo es para el profesor.'],
+['Wir gehen durch ___ Park.','m','def','akk','Park','«durch» siempre lleva acusativo. El masculino cambia: der → den.','Caminamos por el parque.'],
+['Ich gehe ohne ___ Jacke.','f','def','akk','Jacke','«ohne» siempre lleva acusativo. El femenino no cambia: die.','Salgo sin la chaqueta.'],
+['Er ist gegen ___ Idee.','f','def','akk','Idee','«gegen» siempre lleva acusativo. El femenino no cambia: die.','Él está en contra de la idea.'],
+['Ich stelle das Glas auf ___ Tisch.','m','def','akk','Tisch','«auf» es de cambio. Con movimiento (¿wohin?) → Akkusativ: der → den.','Pongo el vaso sobre la mesa.'],
+['Wir gehen in ___ Küche.','f','def','akk','Küche','«in» es de cambio. Con movimiento (¿wohin?) → Akkusativ. El femenino no cambia: die.','Vamos a la cocina.'],
+['Sie legt das Buch in ___ Tasche.','f','def','akk','Tasche','«in» es de cambio. Con movimiento (¿wohin?) → Akkusativ. El femenino no cambia: die.','Ella mete el libro en el bolso.'],
+['Er hängt das Bild an ___ Wand.','f','def','akk','Wand','«an» es de cambio. Con movimiento (¿wohin?) → Akkusativ. El femenino no cambia: die.','Él cuelga el cuadro en la pared.'],
+/* dativo */
+['Ich helfe ___ Mann.','m','def','dat','Mann','«helfen» lleva dativo. Masculino: der → dem.','Ayudo al hombre.'],
+['Ich danke ___ Lehrerin.','f','def','dat','Lehrerin','«danken» lleva dativo. Femenino: die → der.','Le agradezco a la profesora.'],
+['Das Buch gehört ___ Kind.','n','def','dat','Kind','«gehören» lleva dativo. Neutro: das → dem.','El libro es del niño.'],
+['Ich helfe ___ Kindern.','p','def','dat','Kinder','«helfen» lleva dativo. Plural: die → den, y el sustantivo añade -n (Kindern).','Ayudo a los niños.'],
+['Ich gebe ___ Frau das Buch.','f','def','dat','Frau','Con «geben» quien recibe va en dativo. Femenino: die → der.','Le doy el libro a la mujer.'],
+['Ich schenke ___ Bruder ein Buch.','m','mein','dat','Bruder','Con «schenken» quien recibe va en dativo. Masculino: mein → meinem.','Le regalo un libro a mi hermano.'],
+['Ich schreibe ___ Mutter eine E-Mail.','f','mein','dat','Mutter','A quién le escribes va en dativo. Femenino: meine → meiner.','Le escribo un correo a mi mamá.'],
+['Ich antworte ___ Kind.','n','ind','dat','Kind','«antworten» lleva dativo. Neutro: ein → einem.','Le respondo a un niño.'],
+['Wir fahren mit ___ Bus.','m','def','dat','Bus','«mit» siempre lleva dativo. Masculino: der → dem.','Vamos en el bus.'],
+['Sie kommt aus ___ Schule.','f','def','dat','Schule','«aus» siempre lleva dativo. Femenino: die → der.','Ella viene de la escuela.'],
+['Ich wohne bei ___ Eltern.','p','mein','dat','Eltern','«bei» siempre lleva dativo. Plural: meine → meinen.','Vivo con mis padres.'],
+['Ich gehe zu ___ Arzt.','m','mein','dat','Arzt','«zu» siempre lleva dativo. Masculino: mein → meinem.','Voy a donde mi médico.'],
+['Er sitzt neben ___ Frau.','f','def','dat','Frau','«neben» es de cambio. Sin movimiento (¿wo?) → Dativ: die → der.','Él está sentado junto a la mujer.'],
+['Das Buch liegt auf ___ Tisch.','m','def','dat','Tisch','«auf» es de cambio. Sin movimiento (¿wo?) → Dativ: der → dem.','El libro está sobre la mesa.'],
+['Wir sind in ___ Küche.','f','def','dat','Küche','«in» es de cambio. Sin movimiento (¿wo?) → Dativ: die → der.','Estamos en la cocina.'],
+['Das Bild hängt an ___ Wand.','f','def','dat','Wand','«an» es de cambio. Sin movimiento (¿wo?) → Dativ: die → der.','El cuadro cuelga en la pared.'],
+['Die Katze schläft unter ___ Bett.','n','def','dat','Bett','«unter» es de cambio. Sin movimiento (¿wo?) → Dativ: das → dem.','El gato duerme debajo de la cama.'],
+['Wir wohnen seit ___ Jahr in Medellín.','n','ind','dat','Jahr','«seit» siempre lleva dativo. Neutro: ein → einem.','Vivimos en Medellín desde hace un año.'],
+['Nach ___ Essen gehen wir spazieren.','n','def','dat','Essen','«nach» siempre lleva dativo. Neutro: das → dem.','Después de comer salimos a caminar.'],
+['Das Geschenk ist von ___ Lehrerin.','f','def','dat','Lehrerin','«von» siempre lleva dativo. Femenino: die → der.','El regalo es de la profesora.'],
+['Der Pullover gefällt ___ Frau.','f','def','dat','Frau','«gefallen» lleva dativo. Femenino: die → der.','A la mujer le gusta el suéter.'],
+['Wir gratulieren ___ Kind zum Geburtstag.','n','def','dat','Kind','«gratulieren» lleva dativo. Neutro: das → dem.','Felicitamos al niño por su cumpleaños.'],
+['Der Hund folgt ___ Kindern.','p','def','dat','Kinder','«folgen» lleva dativo. Plural: die → den, y el sustantivo añade -n (Kindern).','El perro sigue a los niños.'],
+['Ich zeige ___ Mann meine Wohnung.','m','def','dat','Mann','Con «zeigen» a quien le muestras va en dativo. Masculino: der → dem.','Le muestro mi apartamento al hombre.'],
+['Ich erkläre ___ Schülern die Regel.','p','def','dat','Schüler','Con «erklären» a quien le explicas va en dativo. Plural: die → den, y el sustantivo añade -n (Schülern).','Les explico la regla a los estudiantes.']
+];
+const AITEMS = ARAW.map(function (r) { return {s:r[0],g:r[1],t:r[2],c:r[3],noun:r[4],why:r[5],es:r[6],id:r[0]}; });
+const FILTERS_ART = [['all','Todos'],['nom','Nominativ'],['akk','Akkusativ'],['dat','Dativ']];
+
 /* ---------- Utilidades ---------- */
 const view = document.getElementById('view');
 const store = {
@@ -315,7 +409,7 @@ const store = {
 };
 const saved = store.get();
 const S = {
-  tab:'study', person:'er', list:'verbos',
+  tab:'study', person:'er', list:'verbos', art:'def',
   mode:'fill', filter:'all',
   best:saved.best | 0, box:saved.box || {},
   streak:0, total:0, correct:0,
@@ -367,6 +461,14 @@ function sentHTML(it, state) {
   return esc(parts[0]) + mid + esc(parts[1]);
 }
 
+const artForm = function (it, c) { const f = AF[it.t][it.g][CIDX[c]]; return it.s.indexOf('___') === 0 ? cap(f) : f; };
+function fullArt(it) { const parts = it.s.split('___'); return parts[0] + artForm(it, it.c) + parts[1]; }
+function sentArt(it, filled) {
+  const parts = it.s.split('___');
+  const mid = filled ? '<span class="slot filled c-' + it.c + '">' + esc(artForm(it, it.c)) + '</span>' : '<span class="slot">?</span>';
+  return esc(parts[0]) + mid + esc(parts[1]);
+}
+
 /* ---------- Estudiar ---------- */
 function personHTML() {
   const p = P[S.person];
@@ -380,6 +482,30 @@ function personHTML() {
       '<div class="pform c-dat"><span class="big">' + esc(p.dat) + '</span><span class="md-body"><span>' + badge('dat') + '</span><span class="ex">' + esc(p.ex[2]) + '</span><span class="t-body-m muted">' + esc(p.ex[3]) + '</span></span>' + speakIcon(p.ex[2]) + '</div>' +
     '</div>' +
     (p.note ? '<p class="t-body-m muted">' + ic('info') + ' ' + esc(p.note) + '</p>' : '') +
+  '</section>';
+}
+function artHTML() {
+  const a = AF[S.art], t = S.art;
+  const chips = ATYPES.map(function (x) { return chip(esc(x[1]), S.art === x[0], 'data-art="' + x[0] + '"'); }).join('');
+  const rows = [['nom','Nominativ'],['akk','Akkusativ'],['dat','Dativ'],['gen','Genitiv*']].map(function (r) {
+    const i = CIDX[r[0]];
+    return '<tr><td>' + r[1] + '</td>' + ['m','f','n','p'].map(function (g) {
+      return '<td class="' + r[0] + '">' + (a[g] ? esc(a[g][i]) : '—') + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
+  return '<section class="md-card outlined sec"><header><h2 class="t-title-l">Los artículos en cada caso</h2></header>' +
+    '<div class="pair">' +
+      '<div class="md-card tint c-nom"><span class="badge">Nominativ</span><p class="t-body-m">¿Wer? ¿Was? Es el sujeto, y lo que va después de «sein».</p></div>' +
+      '<div class="md-card tint c-akk"><span class="badge">Akkusativ</span><p class="t-body-m">¿Wen? ¿Was? Es el objeto directo y va tras «für, durch, gegen, ohne, um».</p></div>' +
+      '<div class="md-card tint c-dat"><span class="badge">Dativ</span><p class="t-body-m">¿Wem? Es quien recibe, y va tras «mit, nach, bei, seit, von, zu, aus».</p></div>' +
+    '</div>' +
+    '<div class="md-chips" role="group" aria-label="Tipo de artículo">' + chips + '</div>' +
+    '<div class="scroll"><table class="ptab atab"><thead><tr><th>Caso</th><th>Masc.</th><th>Fem.</th><th>Neut.</th><th>Plur.</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<p class="t-body-m">Solo el <b>masculino</b> cambia entre Nominativ y Akkusativ (der → den, ein → einen). El femenino, el neutro y el plural se quedan igual.</p>' +
+    '<p class="t-body-m">En <b>Dativ</b> todos cambian: dem (masculino y neutro), der (femenino), den (plural). En plural el sustantivo añade -n: <i>den Kindern</i>.</p>' +
+    (t === 'ind' ? '<p class="t-body-m muted">«ein» no tiene plural. Para el plural se usa «keine» o no se pone artículo.</p>' : '') +
+    (t === 'kein' ? '<p class="t-body-m muted">mein, dein, sein, ihr, unser y euer se declinan igual que «kein» (mein → meinen → meinem).</p>' : '') +
+    '<p class="t-body-s muted">*Genitiv (des, der): es de un nivel más avanzado y aquí aparece solo como referencia. Los ejercicios usan Nominativ, Akkusativ y Dativ.</p>' +
   '</section>';
 }
 function tableHTML() {
@@ -402,7 +528,7 @@ function studyHTML() {
   '<section class="md-card outlined tip">' + ic('lightbulb') +
     '<div class="md-body"><h2 class="t-title-m">No traduzcas la «a» del español</h2>' +
     '<p class="t-body-m muted">«Veo a Juan» y «ayudo a Juan» se parecen en español, pero en alemán llevan casos distintos: <b>Ich sehe ihn</b> (acusativo) y <b>Ich helfe ihm</b> (dativo). Lo decide el verbo o la preposición, así que hay que aprender cada uno. Eso es lo que practican las otras pestañas.</p></div></section>' +
-  personHTML() + tableHTML() +
+  personHTML() + tableHTML() + artHTML() +
   '<section class="md-card outlined sec"><header><h2 class="t-title-l">Dos objetos en la misma frase</h2></header>' +
     '<p class="t-body-m">Con verbos como <b>geben, schenken, zeigen, schicken, erklären, bringen, schreiben, sagen, empfehlen</b>, la persona que recibe va en <span class="pn c-dat">dativo</span> y la cosa en <span class="pn c-akk">acusativo</span>.</p>' +
     '<p class="ex">Ich gebe <span class="pn c-dat">ihm</span> <span class="pn c-akk">das Buch</span>.</p>' +
@@ -450,6 +576,7 @@ const WGT = [10, 6, 3, 1.5, 0.5];
 const keyOf = function (it) { return S.mode + ':' + it.id; };
 function pool() {
   if (S.mode === 'verb') return VITEMS;
+  if (S.mode === 'art') return AITEMS.filter(function (it) { return S.filter === 'all' || it.c === S.filter; });
   return ITEMS.filter(function (it) { return S.filter === 'all' || it.cat === S.filter; });
 }
 function choose() {
@@ -460,6 +587,11 @@ function choose() {
   return p[p.length - 1];
 }
 function buildOptions(it) {
+  if (S.mode === 'art') {
+    const seen = {}, o = [], right = artForm(it, it.c);
+    ['nom','akk','dat'].forEach(function (c) { const f = artForm(it, c); if (!seen[f]) { seen[f] = 1; o.push({t:f, c:c, ok:f === right}); } });
+    return shuffle(o);
+  }
   if (S.mode === 'fill') {
     return shuffle([
       {t:cap0(it, 'akk'), c:'akk', ok:it.c === 'akk'},
@@ -492,13 +624,13 @@ function answer(i) {
 function nextQ() { newQuestion(); renderPractice(); }
 function resetSession() { S.queue = []; S.recent = []; S.q = null; S.answered = null; }
 
-const MODES = [['fill','Completar'],['case','¿Qué caso?'],['verb','Verbos y preposiciones']];
+const MODES = [['fill','Completar'],['case','¿Qué caso?'],['verb','Verbos y preposiciones'],['art','Artículos']];
 function picksHTML(q, done) {
   const n = q.opts.length;
   return '<div class="picks' + (n === 3 ? ' n3' : '') + '" style="--n:' + n + '">' + q.opts.map(function (o, i) {
     let cls = '';
     if (done) cls = o.ok ? ' ok' : (S.answered === i ? ' bad' : '');
-    else if (S.mode !== 'fill') cls = ' c-' + o.c;
+    else if (S.mode !== 'fill' && S.mode !== 'art') cls = ' c-' + o.c;
     return '<button class="pick' + cls + '" data-opt="' + i + '"' + (done ? ' disabled' : '') + '>' + esc(o.t) + '</button>';
   }).join('') + '</div>';
 }
@@ -519,6 +651,20 @@ function quizHTML() {
         (it.note ? '<p class="t-body-m">' + esc(it.note) + '</p>' : '') +
         '<div class="md-row" style="margin-top:4px"><button class="md-btn filled" data-act="next" id="nextbtn">Siguiente</button>' + speakBtn(it.ex2 ? it.ex + ' ' + it.ex2 : it.ex) + '</div></div>';
     }
+  } else if (S.mode === 'art') {
+    top = 'Artículos';
+    body = '<p class="sentence">' + sentArt(it, done) + '</p><p class="t-body-l muted center">' + esc(it.es) + '</p>' +
+      '<p class="prompt t-body-l">¿Qué artículo va en el hueco?</p>' + picksHTML(q, done);
+    if (done) {
+      const f = AF[it.t][it.g];
+      fb = '<div class="md-card fbk ' + (ok ? 'c-success' : 'c-error') + '" role="status">' +
+        '<h3>' + ic(ok ? 'check_circle' : 'cancel', true) + (ok ? '¡Richtig!' : 'Todavía no') + '</h3>' +
+        '<p class="t-body-m">' + badge(it.c) + ' ' + esc(CASES[it.c].q) + '</p>' +
+        '<p class="t-body-m">' + esc(it.why) + '</p>' +
+        '<p class="t-body-m"><b>' + GDEF[it.g] + ' ' + esc(it.noun) + '</b> · ' + GL[it.g] + '</p>' +
+        '<p class="t-body-m">Nominativ <b>' + f[0] + '</b> · Akkusativ <b>' + f[1] + '</b> · Dativ <b>' + f[2] + '</b></p>' +
+        '<div class="md-row" style="margin-top:4px"><button class="md-btn filled" data-act="next" id="nextbtn">Siguiente</button>' + speakBtn(fullArt(it)) + '</div></div>';
+    }
   } else {
     top = S.mode === 'fill' ? 'Completar' : '¿Qué caso?';
     const state = S.mode === 'fill' ? (done ? 2 : 0) : (done ? 2 : 1);
@@ -538,10 +684,11 @@ function quizHTML() {
     (q.retry ? '<span class="md-chip static accent">Repaso de un fallo</span>' : '') + '</div>' + body + fb + '</div>';
 }
 function practiceHTML() {
-  const seg = '<div class="md-seg" role="group" aria-label="Tipo de ejercicio" style="align-self:flex-start">' +
-    MODES.map(function (m) { return '<button data-mode="' + m[0] + '" aria-pressed="' + (S.mode === m[0]) + '">' + ic('check') + m[1] + '</button>'; }).join('') + '</div>';
+  const seg = '<div class="ctl"><span class="t-label-m">Ejercicio</span><div class="md-chips" role="group" aria-label="Tipo de ejercicio">' +
+    MODES.map(function (m) { return chip(m[1], S.mode === m[0], 'data-mode="' + m[0] + '"'); }).join('') + '</div></div>';
+  const fl = S.mode === 'art' ? FILTERS_ART : FILTERS;
   const filters = S.mode === 'verb' ? '' :
-    '<div class="md-chips" role="group" aria-label="Tipo de frase">' + FILTERS.map(function (f) { return chip(f[1], S.filter === f[0], 'data-filter="' + f[0] + '"'); }).join('') + '</div>';
+    '<div class="ctl"><span class="t-label-m">' + (S.mode === 'art' ? 'Caso' : 'Tipo de frase') + '</span><div class="md-chips" role="group" aria-label="Filtro">' + fl.map(function (f) { return chip(f[1], S.filter === f[0], 'data-filter="' + f[0] + '"'); }).join('') + '</div></div>';
   const stats = '<div class="stats"><div class="md-card stat"><span class="t-label-m">Racha</span><b>' + S.streak + '</b></div>' +
     '<div class="md-card stat"><span class="t-label-m">Mejor racha</span><b>' + S.best + '</b></div>' +
     '<div class="md-card stat"><span class="t-label-m">Aciertos</span><b>' + S.correct + '/' + S.total + '</b></div></div>';
@@ -574,10 +721,12 @@ view.addEventListener('click', function (e) {
   if (say) { speak(say.dataset.say); return; }
   const pe = e.target.closest('[data-person]');
   if (pe) { S.person = pe.dataset.person; view.innerHTML = studyHTML(); return; }
+  const ar = e.target.closest('[data-art]');
+  if (ar) { S.art = ar.dataset.art; view.innerHTML = studyHTML(); return; }
   const ls = e.target.closest('[data-list]');
   if (ls) { S.list = ls.dataset.list; view.innerHTML = listsHTML(); return; }
   const md = e.target.closest('[data-mode]');
-  if (md) { S.mode = md.dataset.mode; resetSession(); newQuestion(); renderPractice(); return; }
+  if (md) { S.mode = md.dataset.mode; S.filter = 'all'; resetSession(); newQuestion(); renderPractice(); return; }
   const fl = e.target.closest('[data-filter]');
   if (fl) { S.filter = fl.dataset.filter; resetSession(); newQuestion(); renderPractice(); return; }
   const op = e.target.closest('[data-opt]');
