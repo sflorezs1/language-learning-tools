@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F9F9FF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
+<title>Mir oder mich?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap">
+<link rel="stylesheet" href="../material.css">
+<style>
+/* Colores de caso: Akkusativ = primary (azul), Dativ = tertiary (malva). Ver .c-akk y .c-dat. */
+.c-akk{--c:var(--md-primary);--on-c:var(--md-on-primary);--cc:var(--md-primary-container);--on-cc:var(--md-on-primary-container)}
+.c-dat{--c:var(--md-tertiary);--on-c:var(--md-on-tertiary);--cc:var(--md-tertiary-container);--on-cc:var(--md-on-tertiary-container)}
+.c-wech{--c:var(--md-secondary);--on-c:var(--md-on-secondary);--cc:var(--md-secondary-container);--on-cc:var(--md-on-secondary-container)}
+.view{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.center{text-align:center}
+.badge{display:inline-block;align-self:flex-start;padding:0 10px;border-radius:999px;background:var(--c);color:var(--on-c);font:500 12px/20px var(--md-font);letter-spacing:.5px}
+.pn{color:var(--c);font-weight:500}
+.tint{background:var(--cc);color:var(--on-cc);display:flex;flex-direction:column;gap:8px}
+.pair{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.ex{font:500 16px/24px var(--md-font);letter-spacing:.15px}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec>header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.tip{display:flex;gap:16px;align-items:flex-start}
+.tip .md-icon{color:var(--md-primary)}
+
+/* Selector de persona */
+.pform{display:flex;align-items:center;gap:16px;padding:12px 0}
+.pform+.pform{border-top:1px solid var(--md-outline-variant)}
+.pform .big{flex:none;min-width:4.2ch;font:500 36px/44px var(--md-font);letter-spacing:0;color:var(--c)}
+.pform .md-body{display:flex;flex-direction:column;gap:2px}
+
+/* Tabla */
+.scroll{overflow-x:auto}
+table.ptab{width:100%;border-collapse:collapse;font:400 16px/24px var(--md-font)}
+.ptab th{padding:8px 8px;text-align:left;font:500 12px/16px var(--md-font);letter-spacing:.5px;text-transform:uppercase;color:var(--md-on-surface-variant);white-space:nowrap}
+.ptab td{padding:10px 8px;border-top:1px solid var(--md-outline-variant);white-space:nowrap}
+.ptab td:first-child,.ptab th:first-child{white-space:normal;padding-left:0}
+.ptab td:last-child,.ptab th:last-child{padding-right:0}
+.ptab td.akk{color:var(--md-primary);font-weight:500}
+.ptab td.dat{color:var(--md-tertiary);font-weight:500}
+.ptab tr.sel td{background:var(--md-secondary-container)}
+.ptab .es{color:var(--md-on-surface-variant);font-size:13px}
+
+/* Listas */
+.vrow{display:flex;gap:12px;align-items:flex-start;padding:12px 16px}
+.vrow .md-body{display:flex;flex-direction:column;gap:2px}
+.vrow .w{font:500 18px/24px var(--md-font);letter-spacing:0}
+.vrow .note{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--md-on-surface-variant)}
+.vrow .note .md-icon{width:18px;height:18px;font-size:18px}
+.rules-line{padding:12px 16px;border-radius:12px;background:var(--cc);color:var(--on-cc)}
+.card-list{padding:0;overflow:hidden}
+.card-list>header{padding:16px 16px 8px;display:flex;flex-direction:column;gap:8px}
+
+/* Practicar */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{display:flex;flex-direction:column;padding:12px 16px}
+.stat .t-label-m{color:var(--md-on-surface-variant)}
+.stat b{font:400 24px/32px var(--md-font);font-variant-numeric:tabular-nums}
+.quiz{display:flex;flex-direction:column;gap:16px}
+.qtop{display:flex;gap:8px;flex-wrap:wrap}
+.sentence{text-align:center;font:400 28px/40px var(--md-font);letter-spacing:0;overflow-wrap:anywhere}
+.slot{display:inline-block;min-width:3.2ch;padding:0 8px;border-bottom:3px solid var(--md-outline);color:var(--md-on-surface-variant);text-align:center}
+.slot.filled{border-color:var(--c,var(--md-primary));color:var(--c,var(--md-on-surface));font-weight:500}
+.slot.neutral{border-color:var(--md-outline);color:var(--md-on-surface);font-weight:500}
+.vword{text-align:center;font:400 44px/52px var(--md-font);letter-spacing:0;overflow-wrap:anywhere}
+.prompt{text-align:center;color:var(--md-on-surface-variant)}
+.picks{display:grid;gap:12px;grid-template-columns:repeat(var(--n,2),1fr)}
+.pick{position:relative;overflow:hidden;min-height:72px;padding:8px;border:2px solid var(--md-outline);border-radius:16px;background:transparent;color:var(--md-on-surface);font:500 24px/32px var(--md-font);letter-spacing:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pick.c-akk,.pick.c-dat,.pick.c-wech{border-color:var(--c);color:var(--c)}
+.picks.n3 .pick{font-size:18px}
+.pick::before{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .15s}
+.pick:hover:not(:disabled)::before{opacity:.08}
+.pick:disabled{cursor:default}
+.pick.ok{border-color:transparent;background:var(--md-success-container);color:var(--md-on-success-container)}
+.pick.bad{border-color:transparent;background:var(--md-error-container);color:var(--md-on-error-container)}
+.pick:disabled:not(.ok):not(.bad){opacity:.38}
+.fbk{display:flex;flex-direction:column;gap:8px}
+.fbk h3{display:flex;align-items:center;gap:8px;font:500 16px/24px var(--md-font);letter-spacing:.15px}
+.fbk .badge{margin-right:6px}
+.settings{display:flex;flex-direction:column;gap:12px}
+.ctl{display:flex;flex-direction:column;gap:8px}
+.ctl>.t-label-m{color:var(--md-on-surface-variant);text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<header class="md-top">
+  <div class="md-top-in has-action">
+    <a class="md-icon-btn" href="../" aria-label="Todas las herramientas"><span class="md-icon" aria-hidden="true">arrow_back</span></a>
+    <h1>Mir oder mich?</h1>
+    <a class="md-icon-btn" href="../atribuciones/" aria-label="Atribuciones" title="Atribuciones"><span class="md-icon" aria-hidden="true">info</span></a>
+  </div>
+</header>
+
+<main class="md-main"><div class="view" id="view"></div></main>
+
+<nav class="md-nav" role="tablist" aria-label="Secciones">
+  <div class="md-nav-in">
+    <button class="md-nav-item" role="tab" data-tab="study" aria-selected="true"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">school</span></span><span>Estudiar</span></button>
+    <button class="md-nav-item" role="tab" data-tab="lists" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">list_alt</span></span><span>Listas</span></button>
+    <button class="md-nav-item" role="tab" data-tab="practice" aria-selected="false"><span class="md-nav-ind"><span class="md-icon" aria-hidden="true">quiz</span></span><span>Practicar</span></button>
+  </div>
+</nav>
+<div class="md-snack" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+'use strict';
+
+/* ---------- Datos ---------- */
+/* Pronombres personales. nom = nominativo, akk = acusativo, dat = dativo. */
+const P = {
+  ich:{nom:'ich',akk:'mich',dat:'mir',lab:'ich',es:'yo',ex:['Er sieht mich.','Él me ve.','Er hilft mir.','Él me ayuda.']},
+  du:{nom:'du',akk:'dich',dat:'dir',lab:'du',es:'tú',ex:['Ich sehe dich.','Te veo.','Ich helfe dir.','Te ayudo.']},
+  er:{nom:'er',akk:'ihn',dat:'ihm',lab:'er',es:'él',ex:['Ich sehe ihn.','Lo veo.','Ich helfe ihm.','Le ayudo.']},
+  sie:{nom:'sie',akk:'sie',dat:'ihr',lab:'sie (ella)',es:'ella',ex:['Ich sehe sie.','La veo.','Ich helfe ihr.','Le ayudo.']},
+  es:{nom:'es',akk:'es',dat:'ihm',lab:'es',es:'neutro',note:'«es» sustituye a un sustantivo neutro (das Kind, das Auto). Su dativo es ihm, igual que el de er.',ex:['Ich sehe es.','Lo veo (algo neutro).','Ich helfe ihm.','Le ayudo (a un neutro, como das Kind).']},
+  wir:{nom:'wir',akk:'uns',dat:'uns',lab:'wir',es:'nosotros',note:'«uns» es igual en acusativo y dativo: aquí no hay que elegir.',ex:['Er sieht uns.','Él nos ve.','Er hilft uns.','Él nos ayuda.']},
+  ihr:{nom:'ihr',akk:'euch',dat:'euch',lab:'ihr',es:'ustedes (informal)',note:'«euch» es igual en acusativo y dativo: aquí no hay que elegir.',ex:['Ich sehe euch.','Los veo.','Ich helfe euch.','Les ayudo.']},
+  sie_pl:{nom:'sie',akk:'sie',dat:'ihnen',lab:'sie (ellos)',es:'ellos / ellas',ex:['Ich sehe sie.','Los veo.','Ich helfe ihnen.','Les ayudo.']},
+  Sie:{nom:'Sie',akk:'Sie',dat:'Ihnen',lab:'Sie (usted)',es:'usted / ustedes (formal)',note:'«Sie» e «Ihnen» siempre llevan mayúscula.',ex:['Ich sehe Sie.','Lo veo (a usted).','Ich helfe Ihnen.','Le ayudo (a usted).']}
+};
+const PERSONS = ['ich','du','er','sie','es','wir','ihr','sie_pl','Sie'];
+const CASES = {
+  akk:{name:'Akkusativ',q:'Wen? / Was?'},
+  dat:{name:'Dativ',q:'Wem?'},
+  wech:{name:'Depende',q:'¿wo? / ¿wohin?'}
+};
+
+/* Frases: [oración con ___, persona, caso, categoría, por qué, traducción] */
+const RAW = [
+/* verbos con dativo */
+['Kannst du ___ bitte helfen?','ich','dat','verb','«helfen» lleva dativo: ¿a quién ayudas? → wem?','¿Puedes ayudarme, por favor?'],
+['Ich helfe ___ gern.','du','dat','verb','«helfen» lleva dativo.','Te ayudo con gusto.'],
+['Wir helfen ___ am Wochenende.','er','dat','verb','«helfen» lleva dativo.','Le ayudamos el fin de semana.'],
+['Die Lehrerin hilft ___ bei den Hausaufgaben.','sie_pl','dat','verb','«helfen» lleva dativo.','La profesora les ayuda con la tarea.'],
+['Ich danke ___ für die Einladung.','Sie','dat','verb','«danken» lleva dativo.','Le agradezco la invitación.'],
+['Das Buch gehört ___.','ich','dat','verb','«gehören» lleva dativo: ¿a quién pertenece? → wem?','El libro es mío.'],
+['Gehört das Fahrrad ___?','du','dat','verb','«gehören» lleva dativo.','¿La bicicleta es tuya?'],
+['Der Pullover gefällt ___ sehr.','sie','dat','verb','«gefallen» lleva dativo: lo que gusta es el sujeto y la persona va en dativo.','Le gusta mucho el suéter (a ella).'],
+['Gefällt ___ die Stadt?','du','dat','verb','«gefallen» lleva dativo.','¿Te gusta la ciudad?'],
+['Das Essen schmeckt ___ nicht.','er','dat','verb','«schmecken» lleva dativo.','La comida no le gusta (a él).'],
+['Schmeckt ___ der Kaffee?','Sie','dat','verb','«schmecken» lleva dativo.','¿Le gusta el café?'],
+['Die Jacke passt ___ gut.','ich','dat','verb','«passen» lleva dativo.','La chaqueta me queda bien.'],
+['Ich antworte ___ morgen.','er','dat','verb','«antworten» lleva dativo, a diferencia de «fragen» (acusativo).','Le respondo mañana.'],
+['Hörst du ___ überhaupt zu?','ich','dat','verb','«zuhören» lleva dativo, a diferencia de «hören» (acusativo).','¿Me estás escuchando siquiera?'],
+['Wir gratulieren ___ zum Geburtstag.','du','dat','verb','«gratulieren» lleva dativo.','Te felicitamos por tu cumpleaños.'],
+['Der Hund folgt ___ überallhin.','sie','dat','verb','«folgen» lleva dativo.','El perro la sigue a todas partes.'],
+['Ich glaube ___ nicht.','er','dat','verb','«glauben» con una persona lleva dativo («creerle a alguien»).','No le creo.'],
+['Ich vertraue ___ vollkommen.','du','dat','verb','«vertrauen» lleva dativo.','Confío plenamente en ti.'],
+['Ich stimme ___ zu.','sie','dat','verb','«zustimmen» lleva dativo.','Estoy de acuerdo con ella.'],
+['___ fehlt meine Familie.','ich','dat','verb','«fehlen» lleva dativo: lo que falta es el sujeto.','Extraño a mi familia.'],
+['Tut ___ der Rücken weh?','du','dat','verb','«wehtun» lleva dativo.','¿Te duele la espalda?'],
+/* verbos con acusativo */
+['Ich sehe ___ im Park.','er','akk','verb','«sehen» lleva acusativo: ¿a quién ves? → wen?','Lo veo en el parque.'],
+['Siehst du ___ da drüben?','sie','akk','verb','«sehen» lleva acusativo.','¿La ves allá?'],
+['Ich kenne ___ seit drei Jahren.','du','akk','verb','«kennen» lleva acusativo.','Te conozco desde hace tres años.'],
+['Er liebt ___ sehr.','sie','akk','verb','«lieben» lleva acusativo.','Él la ama mucho.'],
+['Wir besuchen ___ am Sonntag.','Sie','akk','verb','«besuchen» lleva acusativo.','Lo visitamos el domingo (a usted).'],
+['Ich rufe ___ später an.','du','akk','verb','«anrufen» lleva acusativo.','Te llamo más tarde.'],
+['Kannst du ___ vom Bahnhof abholen?','ich','akk','verb','«abholen» lleva acusativo.','¿Puedes recogerme en la estación?'],
+['Ich brauche ___ morgen.','er','akk','verb','«brauchen» lleva acusativo.','Lo necesito mañana.'],
+['Mein Freund lädt ___ zur Party ein.','ich','akk','verb','«einladen» lleva acusativo (la persona invitada).','Mi amigo me invita a la fiesta.'],
+['Ich vermisse ___ sehr.','du','akk','verb','«vermissen» lleva acusativo, a diferencia de «fehlen» (dativo).','Te extraño mucho.'],
+['Der Lehrer fragt ___ etwas.','ich','akk','verb','«fragen» lleva acusativo, a diferencia de «antworten» (dativo).','El profesor me pregunta algo.'],
+['Verstehst du ___?','ich','akk','verb','«verstehen» lleva acusativo.','¿Me entiendes?'],
+['Ich höre ___ nicht.','er','akk','verb','«hören» (oír) lleva acusativo, a diferencia de «zuhören» (dativo).','No lo oigo.'],
+['Wir treffen ___ um acht.','sie_pl','akk','verb','«treffen» lleva acusativo.','Los encontramos a las ocho.'],
+['Ich mag ___ sehr.','du','akk','verb','«mögen» lleva acusativo.','Me caes muy bien.'],
+['Der Arzt untersucht ___ gleich.','ich','akk','verb','«untersuchen» lleva acusativo.','El médico me examina enseguida.'],
+['Ich warte auf ___.','er','akk','verb','«warten auf» se construye con acusativo.','Lo espero.'],
+['Ich denke oft an ___.','du','akk','verb','«denken an» se construye con acusativo.','Pienso a menudo en ti.'],
+['Ich finde ___ nett.','er','akk','verb','«finden» lleva acusativo: ¿a quién encuentro simpático? → wen?','Lo encuentro simpático.'],
+['Hast du ___ gestern gesehen?','sie','akk','verb','«sehen» lleva acusativo, también en Perfekt.','¿La viste ayer?'],
+['Ich habe ___ gestern angerufen.','du','akk','verb','«anrufen» lleva acusativo.','Te llamé ayer.'],
+['Er hat ___ nach Hause gebracht.','ich','akk','verb','Aquí «bringen» tiene un solo objeto, la persona que llevan: acusativo.','Él me llevó a casa.'],
+['Kennst du ___?','er','akk','verb','«kennen» lleva acusativo.','¿Lo conoces?'],
+['Der Hund beißt ___.','ich','akk','verb','«beißen» lleva acusativo.','El perro me muerde.'],
+['Mein Bruder ärgert ___ oft.','ich','akk','verb','«ärgern» lleva acusativo.','Mi hermano me molesta a menudo.'],
+['Ich begrüße ___ herzlich.','Sie','akk','verb','«begrüßen» lleva acusativo.','Le doy una cordial bienvenida.'],
+['Das interessiert ___ sehr.','ich','akk','verb','«interessieren» lleva acusativo (no es como «gefallen»).','Eso me interesa mucho.'],
+/* dos objetos: persona en dativo, cosa en acusativo */
+['Ich gebe ___ das Buch.','er','dat','obj2','Con «geben» la persona que recibe va en dativo y la cosa en acusativo.','Le doy el libro.'],
+['Kannst du ___ das Salz geben?','ich','dat','obj2','Quien recibe la sal va en dativo; la cosa (das Salz) va en acusativo.','¿Me pasas la sal?'],
+['Sie schenkt ___ ein Handy.','er','dat','obj2','Con «schenken» quien recibe el regalo va en dativo.','Ella le regala un celular.'],
+['Ich zeige ___ meine Wohnung.','du','dat','obj2','Con «zeigen» la persona a quien le muestras va en dativo.','Te muestro mi apartamento.'],
+['Er schickt ___ eine Nachricht.','sie','dat','obj2','Con «schicken» quien recibe va en dativo.','Él le envía un mensaje.'],
+['Ich erkläre ___ die Regel.','sie_pl','dat','obj2','Con «erklären» a quien le explicas va en dativo.','Les explico la regla.'],
+['Wir kaufen ___ ein Geschenk.','sie','dat','obj2','Para quién compras algo va en dativo.','Le compramos un regalo.'],
+['Der Kellner bringt ___ die Speisekarte.','Sie','dat','obj2','Con «bringen» quien recibe va en dativo.','El mesero le trae la carta.'],
+['Ich schreibe ___ einen Brief.','du','dat','obj2','A quién le escribes va en dativo; la carta va en acusativo.','Te escribo una carta.'],
+['Kannst du ___ die Uhrzeit sagen?','ich','dat','obj2','Con «sagen» a quién le dices algo va en dativo.','¿Me puedes decir la hora?'],
+['Der Kellner empfiehlt ___ das Fischgericht.','ich','dat','obj2','Con «empfehlen» a quién se lo recomiendan va en dativo.','El mesero me recomienda el plato de pescado.'],
+['Ich gebe es ___.','er','dat','obj2','«es» ya es el objeto directo (acusativo), así que la persona va en dativo. Con dos pronombres, primero el acusativo.','Se lo doy.'],
+['Ich gebe ___ dem Kind.','es','akk','obj2','La persona ya aparece como «dem Kind» (dativo). El pronombre es la cosa que se da, así que va en acusativo.','Se lo doy al niño.'],
+['Ich zeige ___ meiner Mutter.','sie_pl','akk','obj2','La persona es «meiner Mutter» (dativo). «sie» son las cosas que se muestran (por ejemplo las fotos), así que va en acusativo.','Se las muestro a mi mamá.'],
+/* expresiones */
+['Wie geht es ___?','Sie','dat','expr','En «Wie geht es …?» la persona va en dativo.','¿Cómo está usted?'],
+['Wie geht es ___?','du','dat','expr','En «Wie geht es …?» la persona va en dativo.','¿Cómo estás?'],
+['Es geht ___ gut.','ich','dat','expr','En «es geht mir gut» la persona va en dativo.','Estoy bien.'],
+['___ ist kalt.','ich','dat','expr','Con sensaciones (kalt, warm, schlecht) la persona va en dativo.','Tengo frío.'],
+['Ist ___ warm?','du','dat','expr','Con sensaciones (kalt, warm, schlecht) la persona va en dativo.','¿Tienes calor?'],
+['Es tut ___ leid.','ich','dat','expr','«leidtun» lleva dativo.','Lo siento.'],
+['Tut es ___ leid?','er','dat','expr','«leidtun» lleva dativo.','¿Lo lamenta él?'],
+['Das ist ___ egal.','er','dat','expr','«egal sein» lleva dativo.','Le da igual.'],
+['Das ist ___ zu teuer.','ich','dat','expr','Con adjetivos como «zu teuer» o «zu schwer», la persona para quien lo es va en dativo.','Eso es demasiado caro para mí.'],
+['Das geht ___ nichts an.','du','akk','expr','«jemanden etwas angehen» lleva acusativo.','Eso no te incumbe.'],
+['Das freut ___ sehr.','ich','akk','expr','«freuen» (alegrar) lleva acusativo.','Eso me alegra mucho.'],
+['Es stört ___ nicht.','ich','akk','expr','«stören» lleva acusativo.','No me molesta.'],
+['Das interessiert ___ nicht.','er','akk','expr','«interessieren» lleva acusativo.','Eso no le interesa.'],
+/* preposiciones */
+['Kommst du mit ___ ins Kino?','ich','dat','prep','«mit» siempre lleva dativo.','¿Vienes conmigo al cine?'],
+['Ich gehe heute Abend zu ___.','du','dat','prep','«zu» siempre lleva dativo.','Esta noche voy a tu casa.'],
+['Ich spreche gern mit ___.','er','dat','prep','«mit» siempre lleva dativo.','Me gusta hablar con él.'],
+['Das Geschenk ist von ___.','sie','dat','prep','«von» siempre lleva dativo.','El regalo es de ella.'],
+['Wir wohnen bei ___.','sie_pl','dat','prep','«bei» siempre lleva dativo.','Vivimos en su casa.'],
+['Ich fahre mit ___ nach Berlin.','Sie','dat','prep','«mit» siempre lleva dativo.','Viajo con usted a Berlín.'],
+['Er sitzt ___ gegenüber.','ich','dat','prep','«gegenüber» lleva dativo y con pronombres suele ir después.','Él se sienta frente a mí.'],
+['Wir sprechen von ___.','er','dat','prep','«von» siempre lleva dativo.','Hablamos de él.'],
+['Außer ___ kommen alle.','er','dat','prep','«außer» siempre lleva dativo.','Todos vienen menos él.'],
+['Das Geschenk ist für ___.','ich','akk','prep','«für» siempre lleva acusativo.','El regalo es para mí.'],
+['Ohne ___ gehe ich nicht.','du','akk','prep','«ohne» siempre lleva acusativo.','Sin ti no voy.'],
+['Ich bin gegen ___.','er','akk','prep','«gegen» siempre lleva acusativo.','Estoy en contra de él.'],
+['Der Brief ist für ___.','Sie','akk','prep','«für» siempre lleva acusativo.','La carta es para usted.'],
+['Das Essen ist für ___.','sie_pl','akk','prep','«für» siempre lleva acusativo.','La comida es para ellos.'],
+['Ich kaufe Blumen für ___.','sie','akk','prep','«für» siempre lleva acusativo.','Compro flores para ella.'],
+['Alle sind gegen ___.','ich','akk','prep','«gegen» siempre lleva acusativo.','Todos están en mi contra.'],
+['Wir gehen ohne ___ los.','er','akk','prep','«ohne» siempre lleva acusativo.','Salimos sin él.'],
+['Es geht um ___.','du','akk','prep','«um» siempre lleva acusativo.','Se trata de ti.'],
+['Der Stuhl steht hinter ___.','du','dat','prep','«hinter» es de cambio. Sin movimiento (¿wo? dónde) → dativo.','La silla está detrás de ti.'],
+['Ich stelle den Stuhl hinter ___.','du','akk','prep','«hinter» es de cambio. Con movimiento (¿wohin? adónde) → acusativo.','Pongo la silla detrás de ti.'],
+['Die Katze sitzt auf ___.','ich','dat','prep','«auf» es de cambio. Sin movimiento (¿wo?) → dativo.','El gato está sentado sobre mí.'],
+['Die Katze springt auf ___.','ich','akk','prep','«auf» es de cambio. Con movimiento hacia un destino (¿wohin?) → acusativo.','El gato salta sobre mí.'],
+['Das Kind sitzt neben ___.','er','dat','prep','«neben» es de cambio. Sin movimiento (¿wo?) → dativo.','El niño está sentado a su lado.']
+];
+const ITEMS = RAW.map(function (r) { return {s:r[0],p:r[1],c:r[2],cat:r[3],why:r[4],es:r[5],id:r[0]+'|'+r[1]}; });
+const FILTERS = [['all','Todos'],['verb','Verbos'],['obj2','Dos objetos'],['prep','Preposiciones'],['expr','Expresiones']];
+
+/* Verbos: [verbo, caso, significado, ejemplo, traducción, nota] */
+const VERBS = [
+['helfen','dat','ayudar','Ich helfe dir.','Te ayudo.',''],
+['danken','dat','agradecer','Wir danken Ihnen.','Les agradecemos.',''],
+['gehören','dat','pertenecer, ser de','Das Auto gehört mir.','El carro es mío.',''],
+['gefallen','dat','gustar','Die Stadt gefällt ihm.','La ciudad le gusta.','Lo que gusta es el sujeto; la persona va en dativo.'],
+['schmecken','dat','saber (bien), gustar la comida','Die Suppe schmeckt mir.','La sopa me gusta.',''],
+['passen','dat','quedar bien, convenir','Der Termin passt mir.','La cita me viene bien.',''],
+['antworten','dat','responder','Ich antworte ihr.','Le respondo.','«fragen» (preguntar) lleva acusativo.'],
+['zuhören','dat','escuchar con atención','Hörst du mir zu?','¿Me escuchas?','«hören» (oír) lleva acusativo.'],
+['gratulieren','dat','felicitar','Ich gratuliere dir.','Te felicito.',''],
+['fehlen','dat','faltar, extrañar','Du fehlst mir.','Te extraño.','«vermissen» (extrañar) lleva acusativo: Ich vermisse dich.'],
+['wehtun','dat','doler','Der Kopf tut mir weh.','Me duele la cabeza.',''],
+['folgen','dat','seguir','Der Hund folgt ihm.','El perro lo sigue.',''],
+['glauben','dat','creerle a alguien','Ich glaube dir.','Te creo.','Con una cosa va en acusativo: Ich glaube das.'],
+['vertrauen','dat','confiar en','Ich vertraue ihr.','Confío en ella.',''],
+['zustimmen','dat','estar de acuerdo con','Ich stimme dir zu.','Estoy de acuerdo contigo.',''],
+['leidtun','dat','lamentar, dar pena','Es tut mir leid.','Lo siento.',''],
+['sehen','akk','ver','Ich sehe dich.','Te veo.',''],
+['hören','akk','oír','Ich höre dich.','Te oigo.','«zuhören» (escuchar con atención) lleva dativo.'],
+['kennen','akk','conocer (a alguien)','Ich kenne ihn.','Lo conozco.',''],
+['lieben','akk','amar','Ich liebe dich.','Te amo.',''],
+['mögen','akk','querer, caer bien','Ich mag sie.','Me cae bien.',''],
+['besuchen','akk','visitar','Wir besuchen sie.','Los visitamos.',''],
+['fragen','akk','preguntar (a alguien)','Ich frage ihn.','Le pregunto.','«antworten» (responder) lleva dativo.'],
+['anrufen','akk','llamar por teléfono','Ich rufe dich an.','Te llamo.',''],
+['brauchen','akk','necesitar','Ich brauche dich.','Te necesito.',''],
+['einladen','akk','invitar','Ich lade dich ein.','Te invito.',''],
+['treffen','akk','encontrarse con','Ich treffe ihn.','Me encuentro con él.',''],
+['abholen','akk','recoger a alguien','Ich hole dich ab.','Te recojo.',''],
+['vermissen','akk','extrañar','Ich vermisse dich.','Te extraño.','«fehlen» lleva dativo: Du fehlst mir.'],
+['verstehen','akk','entender','Ich verstehe dich.','Te entiendo.',''],
+['finden','akk','encontrar, opinar de','Ich finde ihn nett.','Lo encuentro simpático.',''],
+['interessieren','akk','interesar','Das interessiert mich.','Eso me interesa.','No es como «gefallen» (dativo).'],
+['stören','akk','molestar','Das stört mich nicht.','No me molesta.',''],
+['ärgern','akk','fastidiar','Er ärgert mich.','Él me fastidia.',''],
+['begrüßen','akk','saludar, dar la bienvenida','Ich begrüße Sie.','Le doy la bienvenida.','']
+];
+/* Preposiciones: [palabra, caso, significado, ejemplo, traducción, ejemplo 2 (sólo de cambio), traducción 2] */
+const PREPS = [
+['mit','dat','con','Ich gehe mit dir.','Voy contigo.'],
+['nach','dat','después de; hacia (ciudades, países)','Nach dem Kurs gehe ich nach Hause.','Después del curso me voy a casa.'],
+['bei','dat','en casa de; cerca de','Ich wohne bei ihr.','Vivo en su casa.'],
+['seit','dat','desde hace','Ich lerne seit einem Monat Deutsch.','Estudio alemán desde hace un mes.'],
+['von','dat','de; por (quien hace algo)','Das Buch ist von ihm.','El libro es de él.'],
+['zu','dat','a (donde alguien), hacia','Ich gehe zu ihr.','Voy a donde ella.'],
+['aus','dat','de (origen), desde dentro','Er kommt aus der Küche.','Él sale de la cocina.'],
+['gegenüber','dat','frente a','Er sitzt mir gegenüber.','Él se sienta frente a mí.'],
+['außer','dat','excepto','Alle außer ihm kommen.','Todos vienen menos él.'],
+['ab','dat','a partir de','Ab dem ersten Mai arbeite ich hier.','Desde el primero de mayo trabajo aquí.'],
+['für','akk','para','Das ist für dich.','Esto es para ti.'],
+['durch','akk','por, a través de','Wir gehen durch den Park.','Caminamos por el parque.'],
+['gegen','akk','contra','Ich bin gegen ihn.','Estoy en contra de él.'],
+['ohne','akk','sin','Ohne dich ist es langweilig.','Sin ti es aburrido.'],
+['um','akk','alrededor de; sobre (un tema)','Es geht um dich.','Se trata de ti.'],
+['in','wech','en, dentro de','Ich bin in der Schule.','Estoy en la escuela.','Ich gehe in die Schule.','Voy a la escuela.'],
+['an','wech','junto a, en (una superficie vertical)','Das Bild hängt an der Wand.','El cuadro cuelga en la pared.','Ich hänge das Bild an die Wand.','Cuelgo el cuadro en la pared.'],
+['auf','wech','sobre, encima de','Das Buch liegt auf dem Tisch.','El libro está sobre la mesa.','Ich lege das Buch auf den Tisch.','Pongo el libro sobre la mesa.'],
+['über','wech','por encima de','Die Lampe hängt über dem Tisch.','La lámpara cuelga sobre la mesa.','Ich hänge die Lampe über den Tisch.','Cuelgo la lámpara sobre la mesa.'],
+['unter','wech','debajo de','Die Katze liegt unter dem Tisch.','El gato está debajo de la mesa.','Die Katze läuft unter den Tisch.','El gato corre debajo de la mesa.'],
+['vor','wech','delante de','Das Auto steht vor dem Haus.','El carro está frente a la casa.','Er stellt das Auto vor das Haus.','Él pone el carro frente a la casa.'],
+['hinter','wech','detrás de','Der Stuhl steht hinter dem Tisch.','La silla está detrás de la mesa.','Ich stelle den Stuhl hinter den Tisch.','Pongo la silla detrás de la mesa.'],
+['neben','wech','al lado de','Das Kind sitzt neben dem Vater.','El niño está sentado junto al papá.','Ich stelle den Stuhl neben den Tisch.','Pongo la silla junto a la mesa.'],
+['zwischen','wech','entre','Der Hund liegt zwischen den Stühlen.','El perro está entre las sillas.','Er stellt den Tisch zwischen die Stühle.','Él pone la mesa entre las sillas.']
+];
+const VITEMS = VERBS.map(function (v) { return {kind:'v',w:v[0],c:v[1],g:v[2],ex:v[3],exEs:v[4],note:v[5],id:'v:'+v[0]}; })
+  .concat(PREPS.map(function (v) { return {kind:'p',w:v[0],c:v[1],g:v[2],ex:v[3],exEs:v[4],ex2:v[5]||'',ex2Es:v[6]||'',id:'p:'+v[0]}; }));
+
+/* ---------- Utilidades ---------- */
+const view = document.getElementById('view');
+const store = {
+  get: function () { try { return JSON.parse(localStorage.getItem('mmm.v1')) || {}; } catch (e) { return {}; } },
+  set: function (o) { try { localStorage.setItem('mmm.v1', JSON.stringify(o)); } catch (e) {} }
+};
+const saved = store.get();
+const S = {
+  tab:'study', person:'er', list:'verbos',
+  mode:'fill', filter:'all',
+  best:saved.best | 0, box:saved.box || {},
+  streak:0, total:0, correct:0,
+  q:null, answered:null, queue:[], recent:[]
+};
+const persist = function () { store.set({best:S.best, box:S.box}); };
+const esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+const ic = function (n, f) { return '<span class="md-icon' + (f ? ' fill' : '') + '" aria-hidden="true">' + n + '</span>'; };
+const cap = function (s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+const pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+const chip = function (label, pressed, attrs) { return '<button class="md-chip" aria-pressed="' + pressed + '" ' + attrs + '>' + ic('check') + label + '</button>'; };
+const badge = function (c) { return '<span class="badge c-' + c + '">' + CASES[c].name + '</span>'; };
+
+const hasSpeech = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
+let toastT = null;
+function toast(msg) {
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2800);
+}
+function speak(text) {
+  try {
+    if (!hasSpeech) { toast('Este navegador no tiene voz sintética.'); return; }
+    const voices = speechSynthesis.getVoices() || [];
+    const v = voices.find(function (x) { return x.lang && x.lang.toLowerCase().indexOf('de') === 0; });
+    if (voices.length && !v) { toast('No hay una voz en alemán instalada en este dispositivo.'); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = 'de-DE'; u.rate = 0.85; if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } catch (e) { toast('No se pudo reproducir el audio.'); }
+}
+const speakBtn = function (text, label) {
+  return hasSpeech ? '<button class="md-btn tonal has-icon" data-say="' + esc(text) + '">' + ic('volume_up') + (label || 'Escuchar') + '</button>' : '';
+};
+const speakIcon = function (text) {
+  return hasSpeech ? '<button class="md-icon-btn" data-say="' + esc(text) + '" aria-label="Escuchar">' + ic('volume_up') + '</button>' : '';
+};
+const pf = function (p, c) { return P[p][c]; };
+function fullSentence(it) {
+  const parts = it.s.split('___'); let f = pf(it.p, it.c); if (parts[0] === '') f = cap(f);
+  return parts[0] + f + parts[1];
+}
+/* state: 0 = hueco, 1 = pronombre sin color de caso, 2 = pronombre con color de caso */
+function sentHTML(it, state) {
+  const parts = it.s.split('___'); let f = pf(it.p, it.c); if (parts[0] === '') f = cap(f);
+  let mid;
+  if (state === 0) mid = '<span class="slot">?</span>';
+  else mid = '<span class="slot ' + (state === 2 ? 'filled c-' + it.c : 'neutral') + '">' + esc(f) + '</span>';
+  return esc(parts[0]) + mid + esc(parts[1]);
+}
+
+/* ---------- Estudiar ---------- */
+function personHTML() {
+  const p = P[S.person];
+  const chips = PERSONS.map(function (k) { return chip(esc(P[k].lab), S.person === k, 'data-person="' + k + '"'); }).join('');
+  return '<section class="md-card outlined sec">' +
+    '<header><h2 class="t-title-l">Las formas de cada persona</h2></header>' +
+    '<p class="t-body-m muted">Elige una persona para ver su acusativo y su dativo.</p>' +
+    '<div class="md-chips" role="group" aria-label="Persona">' + chips + '</div>' +
+    '<div>' +
+      '<div class="pform c-akk"><span class="big">' + esc(p.akk) + '</span><span class="md-body"><span>' + badge('akk') + '</span><span class="ex">' + esc(p.ex[0]) + '</span><span class="t-body-m muted">' + esc(p.ex[1]) + '</span></span>' + speakIcon(p.ex[0]) + '</div>' +
+      '<div class="pform c-dat"><span class="big">' + esc(p.dat) + '</span><span class="md-body"><span>' + badge('dat') + '</span><span class="ex">' + esc(p.ex[2]) + '</span><span class="t-body-m muted">' + esc(p.ex[3]) + '</span></span>' + speakIcon(p.ex[2]) + '</div>' +
+    '</div>' +
+    (p.note ? '<p class="t-body-m muted">' + ic('info') + ' ' + esc(p.note) + '</p>' : '') +
+  '</section>';
+}
+function tableHTML() {
+  const rows = PERSONS.map(function (k) {
+    const p = P[k], same = p.akk === p.dat;
+    return '<tr' + (k === S.person ? ' class="sel"' : '') + '><td>' + esc(p.nom) + '<div class="es">' + esc(p.es) + '</div></td><td class="akk">' + esc(p.akk) + '</td><td class="dat">' + esc(p.dat) + (same ? ' <span class="es">(igual)</span>' : '') + '</td></tr>';
+  }).join('');
+  return '<section class="md-card outlined sec"><header><h2 class="t-title-l">Tabla completa</h2></header>' +
+    '<div class="scroll"><table class="ptab"><thead><tr><th>Persona</th><th>Akkusativ</th><th>Dativ</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>';
+}
+function studyHTML() {
+  return '<div class="pair">' +
+    '<article class="md-card tint c-akk"><span class="badge">Akkusativ</span><h2 class="t-title-l">¿Wen? ¿Was?</h2>' +
+      '<p class="t-body-m">¿A quién o qué le ocurre la acción directamente? Es el objeto directo.</p>' +
+      '<p class="ex">Ich sehe <b>ihn</b>.</p><p class="t-body-m">¿Wen sehe ich? → ihn</p></article>' +
+    '<article class="md-card tint c-dat"><span class="badge">Dativ</span><h2 class="t-title-l">¿Wem?</h2>' +
+      '<p class="t-body-m">¿A quién o para quién? Es quien recibe, se beneficia o a quien va dirigido algo.</p>' +
+      '<p class="ex">Ich helfe <b>ihm</b>.</p><p class="t-body-m">¿Wem helfe ich? → ihm</p></article>' +
+  '</div>' +
+  '<section class="md-card outlined tip">' + ic('lightbulb') +
+    '<div class="md-body"><h2 class="t-title-m">No traduzcas la «a» del español</h2>' +
+    '<p class="t-body-m muted">«Veo a Juan» y «ayudo a Juan» se parecen en español, pero en alemán llevan casos distintos: <b>Ich sehe ihn</b> (acusativo) y <b>Ich helfe ihm</b> (dativo). Lo decide el verbo o la preposición, así que hay que aprender cada uno. Eso es lo que practican las otras pestañas.</p></div></section>' +
+  personHTML() + tableHTML() +
+  '<section class="md-card outlined sec"><header><h2 class="t-title-l">Dos objetos en la misma frase</h2></header>' +
+    '<p class="t-body-m">Con verbos como <b>geben, schenken, zeigen, schicken, erklären, bringen, schreiben, sagen, empfehlen</b>, la persona que recibe va en <span class="pn c-dat">dativo</span> y la cosa en <span class="pn c-akk">acusativo</span>.</p>' +
+    '<p class="ex">Ich gebe <span class="pn c-dat">ihm</span> <span class="pn c-akk">das Buch</span>.</p>' +
+    '<p class="t-body-m muted">Orden de las palabras: si hay un pronombre y un sustantivo, va primero el pronombre (<i>Ich gebe ihm das Buch</i>, <i>Ich gebe es dem Kind</i>). Si hay dos pronombres, va primero el acusativo.</p>' +
+    '<p class="ex">Ich gebe <span class="pn c-akk">es</span> <span class="pn c-dat">ihm</span>.</p>' +
+    '<div class="md-row">' + speakBtn('Ich gebe es ihm.') + '</div></section>' +
+  '<p class="t-body-s muted">Esta herramienta no cubre todavía los pronombres reflexivos (mich, dich, sich…).</p>';
+}
+
+/* ---------- Listas ---------- */
+function vrow(v) {
+  const extra = v.ex2 ? '<span class="t-body-m">' + esc(v.ex2) + '</span><span class="t-body-m muted">' + esc(v.ex2Es) + '</span>' : '';
+  return '<li class="vrow"><span class="md-body"><span class="w">' + esc(v.w) + ' <span class="t-body-m muted" style="font-weight:400">· ' + esc(v.g) + '</span></span>' +
+    (v.ex2 ? '<span class="t-label-m muted" style="margin-top:4px">¿wo? → Dativ</span>' : '') +
+    '<span class="t-body-m">' + esc(v.ex) + '</span><span class="t-body-m muted">' + esc(v.exEs) + '</span>' +
+    (v.ex2 ? '<span class="t-label-m muted" style="margin-top:4px">¿wohin? → Akkusativ</span>' : '') + extra +
+    (v.note ? '<span class="note t-body-s">' + ic('info') + '<span>' + esc(v.note) + '</span></span>' : '') +
+    '</span>' + speakIcon(v.ex2 ? v.ex + ' ' + v.ex2 : v.ex) + '</li>';
+}
+function listCard(c, title, intro, items) {
+  return '<section class="md-card outlined card-list c-' + c + '"><header>' + badge(c) + '<h2 class="t-title-l">' + esc(title) + '</h2>' +
+    (intro ? '<div class="rules-line t-body-m">' + intro + '</div>' : '') + '</header>' +
+    '<ul class="md-list">' + items.map(vrow).join('') + '</ul></section>';
+}
+function listsHTML() {
+  const seg = '<div class="md-seg" role="group" aria-label="Tipo de lista">' +
+    '<button data-list="verbos" aria-pressed="' + (S.list === 'verbos') + '">' + ic('check') + 'Verbos</button>' +
+    '<button data-list="preps" aria-pressed="' + (S.list === 'preps') + '">' + ic('check') + 'Preposiciones</button></div>';
+  let body;
+  if (S.list === 'verbos') {
+    const v = VITEMS.filter(function (x) { return x.kind === 'v'; });
+    body = listCard('dat', 'Verbos que piden dativo', 'Casi todos hablan de ayudar, agradecer, gustar o pertenecer: la persona <b>recibe</b> algo o se <b>beneficia</b>.', v.filter(function (x) { return x.c === 'dat'; })) +
+           listCard('akk', 'Verbos que piden acusativo', 'La persona o la cosa recibe <b>directamente</b> la acción: ver, oír, conocer, llamar, necesitar.', v.filter(function (x) { return x.c === 'akk'; }));
+  } else {
+    const p = VITEMS.filter(function (x) { return x.kind === 'p'; });
+    body = listCard('dat', 'Siempre con dativo', '<b>aus · bei · mit · nach · seit · von · zu</b>, y además <b>gegenüber · außer · ab</b>.', p.filter(function (x) { return x.c === 'dat'; })) +
+           listCard('akk', 'Siempre con acusativo', '<b>durch · für · gegen · ohne · um</b>.', p.filter(function (x) { return x.c === 'akk'; })) +
+           listCard('wech', 'De cambio (Wechselpräpositionen)', 'Dativo si no hay movimiento (<b>¿wo?</b> dónde). Acusativo si hay movimiento hacia un destino (<b>¿wohin?</b> adónde).', p.filter(function (x) { return x.c === 'wech'; }));
+  }
+  return seg + body;
+}
+
+/* ---------- Practicar ---------- */
+const WGT = [10, 6, 3, 1.5, 0.5];
+const keyOf = function (it) { return S.mode + ':' + it.id; };
+function pool() {
+  if (S.mode === 'verb') return VITEMS;
+  return ITEMS.filter(function (it) { return S.filter === 'all' || it.cat === S.filter; });
+}
+function choose() {
+  const p = pool();
+  const ws = p.map(function (it) { const b = S.box[keyOf(it)] | 0; let w = WGT[Math.min(4, b)]; if (S.recent.indexOf(it.id) >= 0) w *= 0.01; return w; });
+  let t = ws.reduce(function (a, b) { return a + b; }, 0) * Math.random();
+  for (let i = 0; i < p.length; i++) { t -= ws[i]; if (t <= 0) return p[i]; }
+  return p[p.length - 1];
+}
+function buildOptions(it) {
+  if (S.mode === 'fill') {
+    return shuffle([
+      {t:cap0(it, 'akk'), c:'akk', ok:it.c === 'akk'},
+      {t:cap0(it, 'dat'), c:'dat', ok:it.c === 'dat'}
+    ]);
+  }
+  const o = [{t:'Akkusativ', c:'akk', ok:it.c === 'akk'}, {t:'Dativ', c:'dat', ok:it.c === 'dat'}];
+  if (S.mode === 'verb' && it.kind === 'p') o.push({t:'Depende', c:'wech', ok:it.c === 'wech'});
+  return o;
+}
+function cap0(it, c) { const f = pf(it.p, c); return it.s.indexOf('___') === 0 ? cap(f) : f; }
+function newQuestion() {
+  S.queue.forEach(function (r) { r.wait--; });
+  const r = S.queue.find(function (x) { return x.wait <= 0; });
+  let it, retry = false;
+  if (r) { S.queue.splice(S.queue.indexOf(r), 1); it = r.it; retry = true; }
+  else { it = choose(); }
+  S.recent.push(it.id); if (S.recent.length > 4) S.recent.shift();
+  S.q = {it:it, opts:buildOptions(it), retry:retry};
+  S.answered = null;
+}
+function answer(i) {
+  if (S.answered !== null || !S.q || i < 0 || i >= S.q.opts.length) return;
+  const q = S.q, ok = q.opts[i].ok, k = keyOf(q.it);
+  S.answered = i; S.total++;
+  if (ok) { S.correct++; S.streak++; if (S.streak > S.best) S.best = S.streak; S.box[k] = Math.min(4, (S.box[k] | 0) + 1); }
+  else { S.streak = 0; S.box[k] = 0; S.queue.push({it:q.it, wait:3 + Math.floor(Math.random() * 3)}); }
+  persist(); renderPractice();
+}
+function nextQ() { newQuestion(); renderPractice(); }
+function resetSession() { S.queue = []; S.recent = []; S.q = null; S.answered = null; }
+
+const MODES = [['fill','Completar'],['case','¿Qué caso?'],['verb','Verbos y preposiciones']];
+function picksHTML(q, done) {
+  const n = q.opts.length;
+  return '<div class="picks' + (n === 3 ? ' n3' : '') + '" style="--n:' + n + '">' + q.opts.map(function (o, i) {
+    let cls = '';
+    if (done) cls = o.ok ? ' ok' : (S.answered === i ? ' bad' : '');
+    else if (S.mode !== 'fill') cls = ' c-' + o.c;
+    return '<button class="pick' + cls + '" data-opt="' + i + '"' + (done ? ' disabled' : '') + '>' + esc(o.t) + '</button>';
+  }).join('') + '</div>';
+}
+function quizHTML() {
+  const q = S.q, it = q.it, done = S.answered !== null;
+  const ok = done && q.opts[S.answered].ok;
+  let top, body, fb = '';
+  if (S.mode === 'verb') {
+    top = it.kind === 'v' ? 'Verbo' : 'Preposición';
+    body = '<p class="vword">' + esc(it.w) + '</p><p class="prompt t-body-l">' + esc(it.g) + '</p>' +
+      '<p class="prompt t-body-l">' + (it.kind === 'v' ? '¿Qué caso pide la persona u objeto que acompaña a este verbo?' : '¿Qué caso pide esta preposición?') + '</p>' + picksHTML(q, done);
+    if (done) {
+      fb = '<div class="md-card fbk ' + (ok ? 'c-success' : 'c-error') + '" role="status">' +
+        '<h3>' + ic(ok ? 'check_circle' : 'cancel', true) + (ok ? '¡Richtig!' : 'Todavía no') + '</h3>' +
+        '<p class="t-body-m"><b>' + esc(it.w) + '</b> → ' + (it.c === 'wech' ? '<b>depende</b>: ¿wo? → Dativ, ¿wohin? → Akkusativ' : '<b>' + CASES[it.c].name + '</b>') + '</p>' +
+        '<p class="t-body-m">' + esc(it.ex) + ' <span style="opacity:.8">— ' + esc(it.exEs) + '</span></p>' +
+        (it.ex2 ? '<p class="t-body-m">' + esc(it.ex2) + ' <span style="opacity:.8">— ' + esc(it.ex2Es) + '</span></p>' : '') +
+        (it.note ? '<p class="t-body-m">' + esc(it.note) + '</p>' : '') +
+        '<div class="md-row" style="margin-top:4px"><button class="md-btn filled" data-act="next" id="nextbtn">Siguiente</button>' + speakBtn(it.ex2 ? it.ex + ' ' + it.ex2 : it.ex) + '</div></div>';
+    }
+  } else {
+    top = S.mode === 'fill' ? 'Completar' : '¿Qué caso?';
+    const state = S.mode === 'fill' ? (done ? 2 : 0) : (done ? 2 : 1);
+    body = '<p class="sentence">' + sentHTML(it, state) + '</p><p class="t-body-l muted center">' + esc(it.es) + '</p>' +
+      '<p class="prompt t-body-l">' + (S.mode === 'fill' ? '¿Qué pronombre va en el hueco?' : '¿En qué caso está el pronombre?') + '</p>' + picksHTML(q, done);
+    if (done) {
+      const pr = P[it.p];
+      fb = '<div class="md-card fbk ' + (ok ? 'c-success' : 'c-error') + '" role="status">' +
+        '<h3>' + ic(ok ? 'check_circle' : 'cancel', true) + (ok ? '¡Richtig!' : 'Todavía no') + '</h3>' +
+        '<p class="t-body-m">' + badge(it.c) + ' ' + esc(CASES[it.c].q) + '</p>' +
+        '<p class="t-body-m">' + esc(it.why) + '</p>' +
+        '<p class="t-body-m">' + esc(pr.lab) + ' → <b>' + esc(pr.akk) + '</b> (Akkusativ) · <b>' + esc(pr.dat) + '</b> (Dativ)</p>' +
+        '<div class="md-row" style="margin-top:4px"><button class="md-btn filled" data-act="next" id="nextbtn">Siguiente</button>' + speakBtn(fullSentence(it)) + '</div></div>';
+    }
+  }
+  return '<div class="md-card elevated quiz"><div class="qtop"><span class="md-chip static">' + top + '</span>' +
+    (q.retry ? '<span class="md-chip static accent">Repaso de un fallo</span>' : '') + '</div>' + body + fb + '</div>';
+}
+function practiceHTML() {
+  const seg = '<div class="md-seg" role="group" aria-label="Tipo de ejercicio" style="align-self:flex-start">' +
+    MODES.map(function (m) { return '<button data-mode="' + m[0] + '" aria-pressed="' + (S.mode === m[0]) + '">' + ic('check') + m[1] + '</button>'; }).join('') + '</div>';
+  const filters = S.mode === 'verb' ? '' :
+    '<div class="md-chips" role="group" aria-label="Tipo de frase">' + FILTERS.map(function (f) { return chip(f[1], S.filter === f[0], 'data-filter="' + f[0] + '"'); }).join('') + '</div>';
+  const stats = '<div class="stats"><div class="md-card stat"><span class="t-label-m">Racha</span><b>' + S.streak + '</b></div>' +
+    '<div class="md-card stat"><span class="t-label-m">Mejor racha</span><b>' + S.best + '</b></div>' +
+    '<div class="md-card stat"><span class="t-label-m">Aciertos</span><b>' + S.correct + '/' + S.total + '</b></div></div>';
+  return seg + filters + stats + '<div id="quiz">' + quizHTML() + '</div>';
+}
+function renderPractice() {
+  const quiz = document.getElementById('quiz');
+  if (!quiz) { view.innerHTML = practiceHTML(); }
+  else {
+    view.innerHTML = practiceHTML();
+  }
+  if (S.answered !== null) { const b = document.getElementById('nextbtn'); if (b) b.focus({preventScroll:true}); }
+}
+
+/* ---------- Navegación y eventos ---------- */
+function setTab(t) {
+  S.tab = t;
+  document.querySelectorAll('.md-nav-item').forEach(function (b) {
+    const on = b.dataset.tab === t; b.setAttribute('aria-selected', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1;
+  });
+  if (t === 'study') view.innerHTML = studyHTML();
+  else if (t === 'lists') view.innerHTML = listsHTML();
+  else { if (!S.q) newQuestion(); renderPractice(); }
+}
+document.querySelector('.md-nav').addEventListener('click', function (e) {
+  const b = e.target.closest('.md-nav-item'); if (b) { setTab(b.dataset.tab); window.scrollTo(0, 0); }
+});
+view.addEventListener('click', function (e) {
+  const say = e.target.closest('[data-say]');
+  if (say) { speak(say.dataset.say); return; }
+  const pe = e.target.closest('[data-person]');
+  if (pe) { S.person = pe.dataset.person; view.innerHTML = studyHTML(); return; }
+  const ls = e.target.closest('[data-list]');
+  if (ls) { S.list = ls.dataset.list; view.innerHTML = listsHTML(); return; }
+  const md = e.target.closest('[data-mode]');
+  if (md) { S.mode = md.dataset.mode; resetSession(); newQuestion(); renderPractice(); return; }
+  const fl = e.target.closest('[data-filter]');
+  if (fl) { S.filter = fl.dataset.filter; resetSession(); newQuestion(); renderPractice(); return; }
+  const op = e.target.closest('[data-opt]');
+  if (op) { answer(parseInt(op.dataset.opt, 10)); return; }
+  const nx = e.target.closest('[data-act="next"]');
+  if (nx) nextQ();
+});
+document.addEventListener('keydown', function (e) {
+  if (S.tab !== 'practice' || e.metaKey || e.ctrlKey || e.altKey || !S.q) return;
+  if (S.answered === null && ['1', '2', '3'].indexOf(e.key) >= 0) answer(parseInt(e.key, 10) - 1);
+  else if (S.answered !== null && (e.key === 'n' || (e.key === 'Enter' && !(e.target && e.target.closest && e.target.closest('button'))))) { e.preventDefault(); nextQ(); }
+});
+if (hasSpeech) { try { speechSynthesis.getVoices(); } catch (e) {} }
+setTab('study');
+})();
+</script>
+</body>
+</html>
